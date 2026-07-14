@@ -17,7 +17,8 @@ describe('useSessionStore', () => {
       status: 'authenticated',
       token: 'tok',
       expiresAt: futureIso(FIVE_MIN),
-      employee: { id: '1', full_name: 'A', email: 'a@b', role: 'admin' },
+      customerId: 'cust-1',
+      user: { id: '1', full_name: 'A', email: 'a@b', role: 'ADMIN' },
       error: null,
       flag: null,
     });
@@ -27,7 +28,8 @@ describe('useSessionStore', () => {
 
     expect(s.status).toBe('unauthenticated');
     expect(s.token).toBeNull();
-    expect(s.employee).toBeNull();
+    expect(s.user).toBeNull();
+    expect(s.customerId).toBeNull();
     expect(s.expiresAt).toBeNull();
   });
 

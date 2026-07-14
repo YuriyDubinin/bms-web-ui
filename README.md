@@ -17,7 +17,7 @@
 ```
 docker buildx build \
   --platform linux/amd64 \
-  --build-arg VITE_API_BASE_URL=http://37.1.215.81:18080 \
+  --build-arg VITE_API_BASE_URL=http://37.1.215.81:28080 \
   -t yuriydubinin100/bms-web-ui:1.0.0 \
   --load .
 ```

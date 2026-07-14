@@ -1,14 +1,36 @@
 import { API_BASE_URL } from '../config';
-import {
-  ApiError,
-  isAuthError,
-  type ApiErrorCode,
-  type ApiErrorPayload,
-  type PingResponse,
-} from './types';
+import { ApiError, isAuthError, type ApiErrorPayload, type PingResponse } from './types';
 import { authErrorReasonFromCode, emitAuthError } from './interceptor';
 
 const DEFAULT_TIMEOUT_MS = 30_000;
+
+/**
+ * UUID v4 для X-Request-ID. `crypto.randomUUID()` работает только в Secure Context
+ * (HTTPS / localhost) — на обычном http://<ip>:<port> (без TLS-терминации перед nginx)
+ * его нет, и вызов падает с TypeError ДО того, как уйдёт fetch. Поэтому пробуем его первым,
+ * но при недоступности используем `getRandomValues` (доступен в любом контексте) и, в крайнем
+ * случае, Math.random() — ID нужен только для трассировки запроса, не для безопасности.
+ */
+function generateRequestId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // insecure context — падаем в фолбэк ниже
+    }
+  }
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = ((bytes[6] ?? 0) & 0x0f) | 0x40; // version 4
+    bytes[8] = ((bytes[8] ?? 0) & 0x3f) | 0x80; // variant 10
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0'));
+    return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`;
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
 
 /**
  * Провайдер токена. Регистрируется из app-слоя, чтобы shared не знал про entities/session.
@@ -55,7 +77,12 @@ async function request<TResponse>(
     else externalSignal.addEventListener('abort', onExternalAbort, { once: true });
   }
 
-  const finalHeaders: Record<string, string> = { Accept: 'application/json', ...headers };
+  const finalHeaders: Record<string, string> = {
+    Accept: 'application/json',
+    // Своя корреляция запроса — сервер вернёт этот же ID в ответе (для трассировки).
+    'X-Request-ID': generateRequestId(),
+    ...headers,
+  };
   if (body !== undefined) finalHeaders['Content-Type'] = 'application/json';
   if (auth) {
     const token = tokenProvider?.();
@@ -95,7 +122,7 @@ async function request<TResponse>(
       raw && typeof raw === 'object' && 'error' in raw
         ? ((raw as { error?: ApiErrorPayload }).error ?? null)
         : null;
-    const code = (errorPayload?.code ?? 'INTERNAL_ERROR') as ApiErrorCode;
+    const code = errorPayload?.code ?? 'INTERNAL_ERROR';
     const message = errorPayload?.message ?? `HTTP ${res.status}`;
     const apiError = new ApiError(code, message, res.status, errorPayload?.details);
     // Разлогиниваем при любом протухании токена: либо известный auth-код,

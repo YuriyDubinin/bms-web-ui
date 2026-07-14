@@ -46,21 +46,21 @@ async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 export function UserBlock({ onLogoutClick, collapsed = false }: UserBlockProps) {
-  const employee = useSessionStore((s) => s.employee);
-  if (!employee) return null;
+  const user = useSessionStore((s) => s.user);
+  if (!user) return null;
 
   const handleCopyEmail = async () => {
-    const ok = await copyToClipboard(employee.email);
-    if (ok) notify.success('Copied', { description: employee.email });
+    const ok = await copyToClipboard(user.email);
+    if (ok) notify.success('Copied', { description: user.email });
     else notify.error('Copy failed');
   };
 
   if (collapsed) {
     return (
       <div className="flex flex-col items-center gap-2 border-t border-border-subtle pt-4">
-        <Tooltip content={`${employee.full_name} · ${employee.role}`} side="right">
+        <Tooltip content={`${user.full_name} · ${user.role}`} side="right">
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-bg-2 text-[11px] font-medium text-fg-primary">
-            {initialsOf(employee.full_name) || '·'}
+            {initialsOf(user.full_name) || '·'}
           </span>
         </Tooltip>
         <Tooltip content="Sign out" side="right">
@@ -75,9 +75,9 @@ export function UserBlock({ onLogoutClick, collapsed = false }: UserBlockProps) 
   return (
     <div className="border-t border-border-subtle pt-4">
       <div className="flex items-center gap-2">
-        <span className="truncate text-sm text-fg-primary">{employee.full_name}</span>
+        <span className="truncate text-sm text-fg-primary">{user.full_name}</span>
         <Chip tone="neutral" mono className="shrink-0">
-          {employee.role.toUpperCase()}
+          {user.role.toUpperCase()}
         </Chip>
       </div>
       <button
@@ -86,7 +86,7 @@ export function UserBlock({ onLogoutClick, collapsed = false }: UserBlockProps) 
         title="Click to copy"
         className="mt-0.5 w-full truncate text-left font-mono text-xs text-fg-muted transition-colors hover:text-fg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
       >
-        {employee.email}
+        {user.email}
       </button>
 
       <Button

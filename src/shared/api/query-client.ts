@@ -22,15 +22,20 @@ function shouldNotify(err: unknown): boolean {
   return true;
 }
 
+function isNonRetryable(error: unknown): boolean {
+  if (!(error instanceof ApiError)) return false;
+  if (isAuthError(error.code) || error.status === 401) return true;
+  if (error.status === 422 || error.status === 403 || error.status === 404 || error.status === 409)
+    return true;
+  return false;
+}
+
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
         retry: (failureCount, error) => {
-          if (error instanceof ApiError) {
-            if (isAuthError(error.code) || error.status === 401 || error.status === 422)
-              return false;
-          }
+          if (isNonRetryable(error)) return false;
           return failureCount < 2;
         },
         refetchOnWindowFocus: false,

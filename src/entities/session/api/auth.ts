@@ -1,13 +1,18 @@
 import {
   api,
   type LoginRequest,
-  type LoginResponse,
   type LogoutResponse,
   type MeResponse,
+  type RegisterRequest,
+  type Session,
 } from '@shared/api';
 
-export function login(payload: LoginRequest): Promise<LoginResponse> {
-  return api.post<LoginResponse>('/api/auth/login', payload, { auth: false });
+export function register(payload: RegisterRequest): Promise<Session> {
+  return api.post<Session>('/api/auth/register', payload, { auth: false });
+}
+
+export function login(payload: LoginRequest): Promise<Session> {
+  return api.post<Session>('/api/auth/login', payload, { auth: false });
 }
 
 export function logout(): Promise<LogoutResponse> {

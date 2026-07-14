@@ -6,4 +6,4 @@ export type {
   SessionStatus,
   SessionFlag,
 } from './model';
-export { login, logout, me } from './api';
+export { register, login, logout, me } from './api';

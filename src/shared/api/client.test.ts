@@ -24,7 +24,7 @@ describe('isAuthError', () => {
     expect(isAuthError('UNAUTHORIZED')).toBe(true);
     expect(isAuthError('TOKEN_EXPIRED')).toBe(true);
     expect(isAuthError('TOKEN_REVOKED')).toBe(true);
-    expect(isAuthError('EMPLOYEE_DISABLED')).toBe(true);
+    expect(isAuthError('USER_DISABLED')).toBe(true);
   });
 
   it('rejects non-auth codes', () => {

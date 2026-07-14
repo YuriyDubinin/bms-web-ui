@@ -17,8 +17,8 @@ export function NotFoundPage() {
         path: <span className="text-fg-secondary">{pathname}</span>
       </p>
       <div className="mt-6">
-        <Button variant="secondary" onClick={() => navigate('/core')}>
-          Back to Core
+        <Button variant="secondary" onClick={() => navigate('/dashboard')}>
+          Back to Dashboard
         </Button>
       </div>
     </div>

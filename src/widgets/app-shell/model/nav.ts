@@ -1,12 +1,13 @@
 import {
-  Cpu,
-  DatabaseBackup,
-  FileCog,
+  Building2,
+  CalendarDays,
   FolderGit2,
+  LayoutDashboard,
+  ListChecks,
   Package,
-  Server,
+  SlidersHorizontal,
+  UserCog,
   Users,
-  Workflow,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -17,12 +18,13 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: ReadonlyArray<NavItem> = [
-  { to: '/core', label: 'Core', icon: Cpu },
-  { to: '/registry', label: 'Registry', icon: Package },
-  { to: '/servers', label: 'Servers', icon: Server },
-  { to: '/configs', label: 'Configs', icon: FileCog },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderGit2 },
   { to: '/clients', label: 'Clients', icon: Users },
-  { to: '/backups', label: 'Backups', icon: DatabaseBackup },
-  { to: '/workflow', label: 'Workflow', icon: Workflow },
+  { to: '/services', label: 'Services', icon: Package },
+  { to: '/tasks', label: 'Tasks', icon: ListChecks },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { to: '/users', label: 'Team', icon: UserCog },
+  { to: '/settings/organization', label: 'Organization', icon: Building2 },
+  { to: '/settings/custom-fields', label: 'Custom fields', icon: SlidersHorizontal },
 ];

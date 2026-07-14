@@ -27,7 +27,7 @@ export function authErrorReasonFromCode(code: string): AuthErrorReason {
       return 'expired';
     case 'TOKEN_REVOKED':
       return 'revoked';
-    case 'EMPLOYEE_DISABLED':
+    case 'USER_DISABLED':
       return 'disabled';
     default:
       return 'unauthorized';

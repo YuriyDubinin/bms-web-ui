@@ -27,7 +27,7 @@ export const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(function 
   { onMenuOpen, onLogoutClick, menuButtonRef },
   ref,
 ) {
-  const employee = useSessionStore((s) => s.employee);
+  const user = useSessionStore((s) => s.user);
 
   return (
     <header
@@ -46,15 +46,15 @@ export const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(function 
 
       <BrandMark className="absolute left-1/2 -translate-x-1/2" />
 
-      {employee ? (
+      {user ? (
         <Popover.Root>
           <Popover.Trigger asChild>
             <button
               type="button"
-              aria-label={`Account menu — ${employee.full_name}`}
+              aria-label={`Account menu — ${user.full_name}`}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle bg-bg-2 text-[11px] font-medium text-fg-primary transition-colors hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              {initialsOf(employee.full_name) || '·'}
+              {initialsOf(user.full_name) || '·'}
             </button>
           </Popover.Trigger>
           <Popover.Portal>
@@ -63,8 +63,8 @@ export const MobileHeader = forwardRef<HTMLElement, MobileHeaderProps>(function 
               sideOffset={8}
               className="z-50 w-56 rounded-md border border-border-subtle bg-bg-3 p-3 data-[state=open]:animate-fade-in-up"
             >
-              <p className="truncate text-sm text-fg-primary">{employee.full_name}</p>
-              <p className="mt-0.5 truncate font-mono text-xs text-fg-muted">{employee.email}</p>
+              <p className="truncate text-sm text-fg-primary">{user.full_name}</p>
+              <p className="mt-0.5 truncate font-mono text-xs text-fg-muted">{user.email}</p>
               <Button
                 variant="ghost"
                 size="sm"

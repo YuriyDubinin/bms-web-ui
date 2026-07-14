@@ -11,7 +11,7 @@ import { CapsLockHint } from './CapsLockHint';
 
 const MIN_LOADING_MS = 350;
 const SUCCESS_HOLD_MS = 200;
-const DEFAULT_REDIRECT = '/core';
+const DEFAULT_REDIRECT = '/dashboard';
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => window.setTimeout(resolve, ms));

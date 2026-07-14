@@ -50,7 +50,7 @@ export function DesktopSidebar({ onLogoutClick, className }: DesktopSidebarProps
     >
       <div className={cn('flex h-6 items-center pb-3', collapsed ? 'justify-center' : '')}>
         {collapsed ? (
-          <span className="font-mono text-sm font-bold tracking-tight text-fg-primary">D</span>
+          <span className="font-mono text-sm font-bold tracking-tight text-fg-primary">B</span>
         ) : (
           <BrandMark />
         )}

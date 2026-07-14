@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AUTH_EXIT_REASON_KEY } from '@shared/api';
 import { FadeIn, notify } from '@shared/ui';
 import { useDocumentTitle } from '@shared/lib';
 import { sessionSelectors, useSessionStore, type SessionFlag } from '@entities/session';
 import { LoginForm } from './LoginForm';
+import { RegisterForm } from './RegisterForm';
 import { UtcClock } from './UtcClock';
 
 const APP_VERSION = 'v0.1.0';
-const DEFAULT_REDIRECT = '/core';
+const DEFAULT_REDIRECT = '/dashboard';
 
 type LocationState = { from?: { pathname: string } } | null;
+type Mode = 'signin' | 'register';
 
 const FLAG_TOASTS: Record<SessionFlag['reason'], { title: string; description?: string }> = {
   expired: { title: 'Session expired', description: 'Sign in again to continue.' },
@@ -23,15 +25,21 @@ const FLAG_TOASTS: Record<SessionFlag['reason'], { title: string; description?: 
 const CODE_TO_REASON: Record<string, SessionFlag['reason']> = {
   TOKEN_EXPIRED: 'expired',
   TOKEN_REVOKED: 'revoked',
-  EMPLOYEE_DISABLED: 'disabled',
+  USER_DISABLED: 'disabled',
   UNAUTHORIZED: 'unauthorized',
+};
+
+const COPY: Record<Mode, { title: string; subtitle: string }> = {
+  signin: { title: 'Sign in', subtitle: 'Restricted access. Use your credentials.' },
+  register: { title: 'Create organization', subtitle: 'Set up your company workspace.' },
 };
 
 export function LoginPage() {
   const status = useSessionStore(sessionSelectors.status);
   const consumeFlag = useSessionStore((s) => s.consumeFlag);
   const location = useLocation();
-  useDocumentTitle('Sign in');
+  const [mode, setMode] = useState<Mode>('signin');
+  useDocumentTitle(mode === 'signin' ? 'Sign in' : 'Create organization');
 
   // Тост о причине предыдущего разлогина — забираем один раз на mount.
   // Источников два: in-memory флаг store (SPA-навигация) и sessionStorage (после hard-reload).
@@ -64,6 +72,8 @@ export function LoginPage() {
     return <Navigate to={from} replace />;
   }
 
+  const { title, subtitle } = COPY[mode];
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-bg-0">
       {/* Лёгкая радиальная подсветка в углу — живой, но почти невидимый фон. */}
@@ -82,14 +92,26 @@ export function LoginPage() {
             BMS <span className="text-fg-muted/60">{'//'}</span> CONSOLE
           </p>
 
-          <h1 className="mt-3 text-2xl font-normal tracking-tight text-fg-primary">Sign in</h1>
-          <p className="mt-1.5 text-sm text-fg-secondary">
-            Restricted access. Use your credentials.
-          </p>
+          <h1 className="mt-3 text-2xl font-normal tracking-tight text-fg-primary">{title}</h1>
+          <p className="mt-1.5 text-sm text-fg-secondary">{subtitle}</p>
 
-          <div className="mt-6">
-            <LoginForm />
-          </div>
+          <div className="mt-6">{mode === 'signin' ? <LoginForm /> : <RegisterForm />}</div>
+
+          <button
+            type="button"
+            onClick={() => setMode((m) => (m === 'signin' ? 'register' : 'signin'))}
+            className="mt-4 w-full text-center text-xs text-fg-muted transition-colors hover:text-fg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
+          >
+            {mode === 'signin' ? (
+              <>
+                No organization yet? <span className="text-accent">Create one</span>
+              </>
+            ) : (
+              <>
+                Already have an account? <span className="text-accent">Sign in</span>
+              </>
+            )}
+          </button>
 
           <div className="mt-10 flex items-end justify-between font-mono text-[10px] text-fg-muted">
             <span>{APP_VERSION}</span>
