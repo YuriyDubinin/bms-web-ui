@@ -10,30 +10,36 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* ===== Surfaces (тёмная тема — дефолт). Слои сверху вниз. ===== */
-    --bg-0: #0a0a0b; /* глобальный фон страницы */
-    --bg-1: #111114; /* базовая панель/карточка */
-    --bg-2: #17171b; /* поднятый блок (header при скролле, hover на карточке) */
-    --bg-3: #1d1d22; /* поповер, диалог, тултип */
+  /*
+   * Дизайн-токены BMS. Единый контракт переменных для всех четырёх тем —
+   * компоненты и tailwind.config опираются только на эти имена, никогда на raw-цвета.
+   * Тема выбирается через [data-theme] на <html> (см. inline-скрипт в index.html + useTheme).
+   *
+   * Единый бренд-акцент (indigo) во всех темах: «время суток» задаётся температурой
+   * и светлотой поверхностей, а не сменой акцента — так продукт читается как один.
+   */
 
-    /* ===== Borders ===== */
-    --border-subtle: #232328;
-    --border-strong: #2e2e35;
+  /* ===== НОЧЬ (deep cool dark) — дефолт/фолбэк ===== */
+  :root,
+  :root[data-theme='night'] {
+    --bg-0: #0a0c10;
+    --bg-1: #0f1217;
+    --bg-2: #161a20;
+    --bg-3: #1d222b;
 
-    /* ===== Foreground ===== */
-    --fg-primary: #ededef;
-    --fg-secondary: #a5a5ad;
-    --fg-muted: #6f6f78;
-    --fg-inverse: #0a0a0b; /* для текста на акценте */
+    --border-subtle: #222833;
+    --border-strong: #2e3641;
 
-    /* ===== Accent — muted cyan. Один акцент, скупо. ===== */
-    --accent: #5eead4;
-    --accent-hover: #76f0dc;
-    --accent-muted: rgba(94, 234, 212, 0.16);
-    --accent-on: var(--fg-inverse);
+    --fg-primary: #e9ecf1;
+    --fg-secondary: #99a2af;
+    --fg-muted: #616b7a;
+    --fg-inverse: #0a0c10;
 
-    /* ===== State ===== */
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --accent-muted: rgba(99, 102, 241, 0.18);
+    --accent-on: #ffffff;
+
     --state-success: #4ade80;
     --state-success-muted: rgba(74, 222, 128, 0.14);
     --state-error: #f87171;
@@ -42,6 +48,114 @@
     --state-warning-muted: rgba(251, 191, 36, 0.14);
     --state-info: #60a5fa;
     --state-info-muted: rgba(96, 165, 250, 0.14);
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+
+    color-scheme: dark;
+  }
+
+  /* ===== УТРО (cool dawn, light) ===== */
+  :root[data-theme='morning'] {
+    --bg-0: #e8edf4;
+    --bg-1: #ffffff;
+    --bg-2: #f1f5fa;
+    --bg-3: #ffffff;
+
+    --border-subtle: #dfe5ee;
+    --border-strong: #c7d0dd;
+
+    --fg-primary: #111827;
+    --fg-secondary: #4b5563;
+    --fg-muted: #8a94a6;
+    --fg-inverse: #ffffff;
+
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-muted: rgba(79, 70, 229, 0.1);
+    --accent-on: #ffffff;
+
+    --state-success: #16a34a;
+    --state-success-muted: rgba(22, 163, 74, 0.12);
+    --state-error: #dc2626;
+    --state-error-muted: rgba(220, 38, 38, 0.12);
+    --state-warning: #d97706;
+    --state-warning-muted: rgba(217, 119, 6, 0.12);
+    --state-info: #2563eb;
+    --state-info-muted: rgba(37, 99, 235, 0.12);
+
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 10px 30px -12px rgba(15, 23, 42, 0.18);
+
+    color-scheme: light;
+  }
+
+  /* ===== ДЕНЬ (bright warm paper, light, max contrast) ===== */
+  :root[data-theme='day'] {
+    --bg-0: #f5f5f3;
+    --bg-1: #ffffff;
+    --bg-2: #ecece8;
+    --bg-3: #ffffff;
+
+    --border-subtle: #e6e6e1;
+    --border-strong: #d2d2cb;
+
+    --fg-primary: #0a0a0a;
+    --fg-secondary: #44443f;
+    --fg-muted: #8a8a82;
+    --fg-inverse: #ffffff;
+
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-muted: rgba(79, 70, 229, 0.1);
+    --accent-on: #ffffff;
+
+    --state-success: #15803d;
+    --state-success-muted: rgba(21, 128, 61, 0.12);
+    --state-error: #dc2626;
+    --state-error-muted: rgba(220, 38, 38, 0.12);
+    --state-warning: #b45309;
+    --state-warning-muted: rgba(180, 83, 9, 0.12);
+    --state-info: #1d4ed8;
+    --state-info-muted: rgba(29, 78, 216, 0.12);
+
+    --shadow-sm: 0 1px 2px 0 rgba(10, 10, 10, 0.07);
+    --shadow-md: 0 10px 30px -12px rgba(10, 10, 10, 0.16);
+
+    color-scheme: light;
+  }
+
+  /* ===== ВЕЧЕР (warm dim dark) ===== */
+  :root[data-theme='evening'] {
+    --bg-0: #14110e;
+    --bg-1: #1b1713;
+    --bg-2: #231e18;
+    --bg-3: #2b251d;
+
+    --border-subtle: #2e2820;
+    --border-strong: #3e362a;
+
+    --fg-primary: #f2ebe1;
+    --fg-secondary: #baaf9e;
+    --fg-muted: #857a69;
+    --fg-inverse: #14110e;
+
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --accent-muted: rgba(129, 140, 248, 0.18);
+    --accent-on: #14110e;
+
+    --state-success: #4ade80;
+    --state-success-muted: rgba(74, 222, 128, 0.14);
+    --state-error: #f87171;
+    --state-error-muted: rgba(248, 113, 113, 0.14);
+    --state-warning: #fbbf24;
+    --state-warning-muted: rgba(251, 191, 36, 0.14);
+    --state-info: #60a5fa;
+    --state-info-muted: rgba(96, 165, 250, 0.14);
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 16px 40px -12px rgba(0, 0, 0, 0.55);
 
     color-scheme: dark;
   }
@@ -62,6 +176,10 @@
     min-height: 100vh;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+    /* Плавная смена темы — только фон/текст, чтобы переключение ощущалось premium, но не тормозило. */
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
 
   :focus-visible {
@@ -71,7 +189,7 @@
   }
 
   ::selection {
-    background: rgba(94, 234, 212, 0.3);
+    background: var(--accent-muted);
     color: var(--fg-primary);
   }
 
@@ -109,18 +227,6 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--border-strong);
     background-clip: content-box;
-  }
-}
-
-@layer utilities {
-  .skeleton-shimmer {
-    background-image: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.04) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
   }
 }
 

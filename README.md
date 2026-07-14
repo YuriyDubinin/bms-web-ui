@@ -3,15 +3,10 @@
 ## Стек
 
 - **React 18** + **TypeScript** (strict, `noUncheckedIndexedAccess`)
-- **Vite 5** + **Tailwind CSS** с дизайн-токенами в CSS variables
-- **Zustand 5** (UI- и session-стор, persist в localStorage)
-- **TanStack Query 5** (server-state, retry-политика, глобальный onError)
-- **React Router 6** (BrowserRouter + lazy roots)
-- **React Hook Form** + **Zod** (резолвер `@hookform/resolvers/zod`)
-- **Framer Motion 11** (page transitions, stagger, fade)
-- **Radix UI** (Dialog, Popover, Tooltip — focus trap, ESC, body lock)
-- **Sonner** для тостов, **lucide-react** иконки, **Inter** + **JetBrains Mono**
+- **Vite 5** + **Tailwind CSS** с дизайн-токенами в CSS variables (**Inter** + **JetBrains Mono**)
 - **Vitest** + **Testing Library**
+
+Пустой каркас: только сборка/деплой и дизайн-токены. Функционал (роутинг, стейт-менеджмент, формы, API-слой и т.д.) будет собран заново поверх этой базы.
 
 ## Сборка
 ```

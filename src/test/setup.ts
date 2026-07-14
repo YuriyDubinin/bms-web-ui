@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 
-// framer-motion uses matchMedia for prefers-reduced-motion
+// jsdom не реализует matchMedia — мокаем на случай, если код/либы его читают.
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({

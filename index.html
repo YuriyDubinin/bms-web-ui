@@ -5,11 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0A0A0B" />
-    <meta
-      name="description"
-      content="BMS Console — internal admin console for managing servers, containers and clients."
-    />
-    <title>BMS // CONSOLE</title>
+    <meta name="description" content="BMS" />
+    <title>BMS</title>
+    <!-- Применяем сохранённую тему до первой отрисовки — иначе мелькнёт дефолтная. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('bms.theme');
+          var ok = ['morning', 'day', 'evening', 'night'].indexOf(t) !== -1;
+          document.documentElement.setAttribute('data-theme', ok ? t : 'night');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'night');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

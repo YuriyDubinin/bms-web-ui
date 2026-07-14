@@ -47,6 +47,10 @@ const config: Config = {
         sm: '0.25rem',
         md: '0.375rem',
       },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+      },
       keyframes: {
         'fade-in': {
           from: { opacity: '0' },
