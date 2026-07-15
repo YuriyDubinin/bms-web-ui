@@ -25,4 +25,37 @@ export type {
   UpdateServiceInput,
   DeleteServiceResponse,
 } from './services';
+export { listClients, createClient, updateClient, deleteClient } from './clients';
+export type {
+  Client,
+  ClientStatus,
+  ClientSortBy,
+  ClientListParams,
+  ClientInput,
+  UpdateClientInput,
+  DeleteClientResponse,
+} from './clients';
+export { listTasks, createTask, updateTask, deleteTask } from './tasks';
+export type {
+  Task,
+  TaskStatus,
+  TaskPriority,
+  TaskSortBy,
+  TaskListParams,
+  TaskInput,
+  UpdateTaskInput,
+  DeleteTaskResponse,
+} from './tasks';
+export { listUsers } from './users';
+export type { User, UserListParams } from './users';
+export { listDeals, createDeal, updateDeal, deleteDeal } from './deals';
+export type {
+  Deal,
+  DealStatus,
+  DealSortBy,
+  DealListParams,
+  DealInput,
+  UpdateDealInput,
+  DeleteDealResponse,
+} from './deals';
 export { API_BASE_URL } from './config';

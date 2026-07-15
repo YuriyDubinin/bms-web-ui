@@ -7,9 +7,12 @@ import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useProjects } from './useProjects';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { StatusChip } from './StatusChip';
-import { ArrowLeftIcon, PencilIcon, PlusIcon, TrashIcon } from './icons';
+import { ArrowLeftIcon, PencilIcon, TrashIcon } from './icons';
 import { formatDateTime, formatPeriod } from './model';
 import { ServicesManager, useServices } from '../services';
+import { ClientsManager, useClients } from '../clients';
+import { TasksManager, useTasks, useUsers } from '../tasks';
+import { DealsManager, useDeals } from '../deals';
 
 function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
@@ -44,89 +47,20 @@ type Section = {
   key: SectionKey;
   label: string;
   icon: NavIconName;
-  add: string;
-  columns: string[];
-  hint: string;
 };
 
+/** Разделы связанных сущностей проекта — для KPI-счётчиков и вкладок. */
 const SECTIONS: Section[] = [
-  {
-    key: 'clients',
-    label: 'Клиенты',
-    icon: 'clients',
-    add: 'Добавить клиента',
-    columns: ['Клиент', 'Контакты', 'Статус', 'Источник'],
-    hint: 'Здесь появятся клиенты, привязанные к этому проекту: контакты, компании и статусы взаимодействия.',
-  },
-  {
-    key: 'services',
-    label: 'Услуги',
-    icon: 'services',
-    add: 'Добавить услугу',
-    columns: ['Услуга', 'Категория', 'Цена', 'Длительность'],
-    hint: 'Здесь появятся услуги проекта: наименования, категории, цены и длительность.',
-  },
-  {
-    key: 'tasks',
-    label: 'Задачи',
-    icon: 'tasks',
-    add: 'Добавить задачу',
-    columns: ['Задача', 'Статус', 'Приоритет', 'Срок'],
-    hint: 'Здесь появятся задачи, прикреплённые к проекту: статусы, приоритеты, исполнители и сроки.',
-  },
-  {
-    key: 'deals',
-    label: 'Сделки',
-    icon: 'deals',
-    add: 'Добавить сделку',
-    columns: ['Сделка', 'Этап', 'Сумма', 'Ответственный'],
-    hint: 'Здесь появятся сделки проекта и воронка продаж: этапы, суммы и вероятность закрытия.',
-  },
+  { key: 'clients', label: 'Клиенты', icon: 'clients' },
+  { key: 'services', label: 'Услуги', icon: 'services' },
+  { key: 'tasks', label: 'Задачи', icon: 'tasks' },
+  { key: 'deals', label: 'Сделки', icon: 'deals' },
 ];
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'overview', label: 'Обзор' },
   ...SECTIONS.map((s) => ({ key: s.key, label: s.label })),
 ];
-
-/** Превью раздела сущности: тулбар + «будущая» таблица (заголовки колонок) и заглушка тела. */
-function SectionPreview({ section }: { section: Section }) {
-  return (
-    <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-fg-primary">{section.label} проекта</h2>
-        <Button variant="secondary" size="sm" leftIcon={<PlusIcon />} disabled title="Функционал в разработке">
-          {section.add}
-        </Button>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-border-subtle">
-        {/* Заголовки будущих колонок — показывают структуру раздела. */}
-        <div className="hidden border-b border-border-subtle bg-bg-2/60 sm:flex">
-          {section.columns.map((col) => (
-            <span
-              key={col}
-              className="flex-1 px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-fg-muted"
-            >
-              {col}
-            </span>
-          ))}
-        </div>
-
-        <div className="flex flex-col items-center px-6 py-14 text-center">
-          <span className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent-muted text-accent">
-            <NavGlyph name={section.icon} size={24} />
-          </span>
-          <h3 className="text-base font-semibold text-fg-primary">{section.label} проекта</h3>
-          <p className="mt-2 max-w-md text-sm leading-relaxed text-fg-secondary">{section.hint}</p>
-          <span className="mt-4 inline-flex items-center rounded-full bg-bg-2 px-2.5 py-0.5 font-mono text-[11px] text-fg-muted">
-            Функционал в разработке
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
@@ -140,6 +74,29 @@ export function ProjectDetailPage() {
     error: servicesError,
     reload: reloadServices,
   } = useServices({ projectId: id });
+  // Клиенты этого проекта — для счётчика в KPI и для вкладки «Клиенты».
+  const {
+    clients,
+    isLoading: clientsLoading,
+    error: clientsError,
+    reload: reloadClients,
+  } = useClients({ projectId: id });
+  // Задачи этого проекта — для счётчика в KPI и для вкладки «Задачи».
+  const {
+    tasks,
+    isLoading: tasksLoading,
+    error: tasksError,
+    reload: reloadTasks,
+  } = useTasks({ projectId: id });
+  // Операторы организации — для выбора/резолва исполнителя в задачах.
+  const { users } = useUsers();
+  // Сделки этого проекта — для счётчика в KPI, вкладки «Сделки» и привязки задачи к сделке.
+  const {
+    deals,
+    isLoading: dealsLoading,
+    error: dealsError,
+    reload: reloadDeals,
+  } = useDeals({ projectId: id });
 
   const project = projects.find((p) => p.id === id) ?? null;
 
@@ -259,7 +216,23 @@ export function ProjectDetailPage() {
               <span className="text-xs">{s.label}</span>
             </span>
             <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-fg-primary">
-              {s.key === 'services' ? (servicesLoading ? '…' : services.length) : '—'}
+              {s.key === 'services'
+                ? servicesLoading
+                  ? '…'
+                  : services.length
+                : s.key === 'clients'
+                  ? clientsLoading
+                    ? '…'
+                    : clients.length
+                  : s.key === 'tasks'
+                    ? tasksLoading
+                      ? '…'
+                      : tasks.length
+                    : s.key === 'deals'
+                      ? dealsLoading
+                        ? '…'
+                        : deals.length
+                      : '—'}
             </p>
           </button>
         ))}
@@ -333,9 +306,42 @@ export function ProjectDetailPage() {
             defaultProjectId={project.id}
             showProjectColumn={false}
           />
-        ) : (
-          <SectionPreview section={SECTIONS.find((s) => s.key === tab) as Section} />
-        )}
+        ) : tab === 'clients' ? (
+          <ClientsManager
+            clients={clients}
+            isLoading={clientsLoading}
+            error={clientsError}
+            reload={reloadClients}
+            projects={projects}
+            defaultProjectId={project.id}
+            showProjectColumn={false}
+          />
+        ) : tab === 'tasks' ? (
+          <TasksManager
+            tasks={tasks}
+            isLoading={tasksLoading}
+            error={tasksError}
+            reload={reloadTasks}
+            projects={projects}
+            clients={clients}
+            deals={deals}
+            users={users}
+            defaultProjectId={project.id}
+            showProjectColumn={false}
+          />
+        ) : tab === 'deals' ? (
+          <DealsManager
+            deals={deals}
+            isLoading={dealsLoading}
+            error={dealsError}
+            reload={reloadDeals}
+            projects={projects}
+            clients={clients}
+            users={users}
+            defaultProjectId={project.id}
+            showProjectColumn={false}
+          />
+        ) : null}
       </div>
 
       <ProjectFormDialog
