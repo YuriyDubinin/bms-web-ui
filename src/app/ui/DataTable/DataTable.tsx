@@ -278,7 +278,7 @@ export function DataTable<T>({
     );
   } else if (view === 'table') {
     content = (
-      <div className="overflow-x-auto rounded-lg border border-border-subtle">
+      <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-1 shadow-sm">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-border-subtle bg-bg-2/60">
