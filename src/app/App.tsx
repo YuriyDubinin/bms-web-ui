@@ -5,7 +5,7 @@ import { AppLayout } from '@app/layout';
 import { LoginPage } from '@app/pages/LoginPage';
 import { DashboardPage } from '@app/pages/DashboardPage';
 import { ProjectsPage, ProjectDetailPage } from '@app/pages/projects';
-import { ServicesPage } from '@app/pages/ServicesPage';
+import { ServicesPage } from '@app/pages/services';
 import { ClientsPage } from '@app/pages/ClientsPage';
 import { DealsPage } from '@app/pages/DealsPage';
 import { TasksPage } from '@app/pages/TasksPage';

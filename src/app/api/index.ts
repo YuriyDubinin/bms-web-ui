@@ -15,4 +15,14 @@ export type {
   Pagination,
   Paginated,
 } from './projects';
+export { listServices, createService, updateService, deleteService } from './services';
+export type {
+  Service,
+  ServiceStatus,
+  ServiceSortBy,
+  ServiceListParams,
+  ServiceInput,
+  UpdateServiceInput,
+  DeleteServiceResponse,
+} from './services';
 export { API_BASE_URL } from './config';

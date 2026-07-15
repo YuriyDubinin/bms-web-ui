@@ -303,7 +303,9 @@ export function DataTable<T>({
                         type="button"
                         onClick={() => toggleSort(col)}
                         className={cx(
-                          'inline-flex items-center gap-1 transition-colors hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded',
+                          // uppercase дублируем и на кнопке: Preflight сбрасывает text-transform
+                          // у <button>, иначе заголовки сортируемых колонок теряют капс из <th>.
+                          'inline-flex items-center gap-1 uppercase tracking-wider transition-colors hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded',
                           col.align === 'right' && 'flex-row-reverse',
                           sortActive && 'text-fg-primary',
                         )}
@@ -356,7 +358,9 @@ export function DataTable<T>({
             key={getRowId(item)}
             {...clickableProps(item)}
             className={cx(
-              'rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm transition-colors',
+              // min-w-0: grid-трек иначе растягивается по max-content карточки (truncate-заголовок
+              // с white-space:nowrap), из-за чего на мобиле карточки вылазят за вьюпорт.
+              'min-w-0 rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm transition-colors',
               onRowClick &&
                 'cursor-pointer hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
             )}

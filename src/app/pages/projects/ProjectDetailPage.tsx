@@ -9,12 +9,15 @@ import { ProjectFormDialog } from './ProjectFormDialog';
 import { StatusChip } from './StatusChip';
 import { ArrowLeftIcon, PencilIcon, PlusIcon, TrashIcon } from './icons';
 import { formatDateTime, formatPeriod } from './model';
+import { ServicesManager, useServices } from '../services';
 
 function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <div
       className={[
-        'rounded-lg border border-border-subtle bg-bg-1 p-5 shadow-sm transition-colors duration-300',
+        // min-w-0: в grid-раскладке трек иначе тянется по max-content (truncate-значения
+        // MetaRow с white-space:nowrap), и карточка вылазит за вьюпорт на мобиле.
+        'min-w-0 rounded-lg border border-border-subtle bg-bg-1 p-5 shadow-sm transition-colors duration-300',
         className,
       ]
         .filter(Boolean)
@@ -130,6 +133,13 @@ export function ProjectDetailPage() {
   const navigate = useNavigate();
   const { token, logout } = useAuth();
   const { projects, isLoading, error, reload } = useProjects();
+  // Услуги этого проекта — для счётчика в KPI и для вкладки «Услуги».
+  const {
+    services,
+    isLoading: servicesLoading,
+    error: servicesError,
+    reload: reloadServices,
+  } = useServices({ projectId: id });
 
   const project = projects.find((p) => p.id === id) ?? null;
 
@@ -248,13 +258,15 @@ export function ProjectDetailPage() {
               <NavGlyph name={s.icon} size={16} />
               <span className="text-xs">{s.label}</span>
             </span>
-            <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-fg-primary">—</p>
+            <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-fg-primary">
+              {s.key === 'services' ? (servicesLoading ? '…' : services.length) : '—'}
+            </p>
           </button>
         ))}
       </div>
 
       {/* Вкладки */}
-      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-border-subtle">
+      <div className="no-scrollbar mt-6 flex gap-1 overflow-x-auto border-b border-border-subtle">
         {TABS.map((t) => {
           const active = tab === t.key;
           return (
@@ -311,6 +323,16 @@ export function ProjectDetailPage() {
               )}
             </Card>
           </div>
+        ) : tab === 'services' ? (
+          <ServicesManager
+            services={services}
+            isLoading={servicesLoading}
+            error={servicesError}
+            reload={reloadServices}
+            projects={projects}
+            defaultProjectId={project.id}
+            showProjectColumn={false}
+          />
         ) : (
           <SectionPreview section={SECTIONS.find((s) => s.key === tab) as Section} />
         )}

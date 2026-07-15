@@ -241,6 +241,21 @@
   }
 }
 
+@layer utilities {
+  /*
+   * Скрытая (но рабочая) прокрутка — для горизонтальных лент вкладок.
+   * Глобальный тонкий scrollbar + overflow-x-auto дают паразитный ползунок
+   * (в т.ч. вертикальный из-за -mb-px активной вкладки); здесь его прячем,
+   * сохраняя возможность скроллить свайпом/трекпадом на узких экранах.
+   */
+  .no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome / Safari / WebKit */
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
