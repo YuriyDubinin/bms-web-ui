@@ -193,6 +193,17 @@
     color: var(--fg-primary);
   }
 
+  /* Нативные date/time-инпуты на мобильных Safari/WebView имеют большую intrinsic-ширину
+     и без этого распирают flex/grid-контейнеры (поля «вылазят» из формы). Разрешаем сжатие. */
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='time'],
+  input[type='month'],
+  input[type='week'] {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   /* Перекрываем стандартную белёсую подсветку Chrome autofill — держим цвета токенов. */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,

@@ -27,7 +27,8 @@ type Errors = Partial<Record<FieldKey, string>>;
 
 function inputClass(hasError: boolean): string {
   return cx(
-    'w-full rounded-md border bg-bg-1 px-3 py-2 text-sm text-fg-primary placeholder:text-fg-muted',
+    // min-w-0 обязателен: иначе нативный date-инпут на мобильных не сжимается и вылезает из формы.
+    'w-full min-w-0 rounded-md border bg-bg-1 px-3 py-2 text-sm text-fg-primary placeholder:text-fg-muted',
     'transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
     hasError
       ? 'border-state-error focus:border-state-error focus:ring-state-error-muted'
@@ -51,7 +52,7 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       <label htmlFor={htmlFor} className="text-xs font-medium text-fg-secondary">
         {label}
         {required ? <span className="text-state-error"> *</span> : null}

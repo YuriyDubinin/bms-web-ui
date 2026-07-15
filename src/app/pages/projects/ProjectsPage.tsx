@@ -1,55 +1,14 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ApiError, deleteProject, type Project } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { PageHeader } from '../PageHeader';
 import { ProjectFormDialog } from './ProjectFormDialog';
 import { useProjects } from './useProjects';
-import {
-  PROJECT_STATUS_LABELS,
-  PROJECT_STATUS_TONE,
-  formatDateTime,
-  formatPeriod,
-} from './model';
-
-function PlusIcon() {
-  return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
-    </svg>
-  );
-}
-
-function PencilIcon() {
-  return (
-    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M3 6h18" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <line x1="10" x2="10" y1="11" y2="17" />
-      <line x1="14" x2="14" y1="11" y2="17" />
-    </svg>
-  );
-}
-
-function StatusChip({ status }: { status: Project['status'] }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${PROJECT_STATUS_TONE[status]}`}
-    >
-      {PROJECT_STATUS_LABELS[status]}
-    </span>
-  );
-}
+import { PROJECT_STATUS_LABELS, formatDateTime, formatPeriod } from './model';
+import { StatusChip } from './StatusChip';
+import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
 function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
   return (
@@ -69,8 +28,11 @@ function RowAction({ label, onClick, children }: { label: string; onClick: () =>
 }
 
 export function ProjectsPage() {
+  const navigate = useNavigate();
   const { token, logout } = useAuth();
   const { projects, isLoading, error, reload } = useProjects();
+
+  const openProject = (project: Project) => navigate(`/projects/${project.id}`);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
@@ -235,7 +197,7 @@ export function ProjectsPage() {
         columns={columns}
         getRowId={(p) => p.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
+        onRowClick={openProject}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию и направлению…"

@@ -4,7 +4,7 @@ import { useAuth } from '@app/auth';
 import { AppLayout } from '@app/layout';
 import { LoginPage } from '@app/pages/LoginPage';
 import { DashboardPage } from '@app/pages/DashboardPage';
-import { ProjectsPage } from '@app/pages/projects';
+import { ProjectsPage, ProjectDetailPage } from '@app/pages/projects';
 import { ServicesPage } from '@app/pages/ServicesPage';
 import { ClientsPage } from '@app/pages/ClientsPage';
 import { DealsPage } from '@app/pages/DealsPage';
@@ -49,6 +49,7 @@ export function App() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/deals" element={<DealsPage />} />
