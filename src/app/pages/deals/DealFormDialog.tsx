@@ -7,7 +7,9 @@ import {
   type Deal,
   type DealInput,
   type DealStatus,
+  type DealType,
   type Project,
+  type Service,
   type User,
 } from '@app/api';
 import { useAuth } from '@app/auth';
@@ -17,6 +19,8 @@ import {
   CURRENCIES,
   DEAL_STATUSES,
   DEAL_STATUS_LABELS,
+  DEAL_TYPES,
+  DEAL_TYPE_LABELS,
   DEFAULT_CURRENCY,
   formatDateTime,
 } from './model';
@@ -39,6 +43,7 @@ type FieldKey =
   | 'expected_close_at'
   | 'project_id'
   | 'client_id'
+  | 'service_id'
   | 'assigned_to'
   | 'attributes';
 type Errors = Partial<Record<FieldKey, string>>;
@@ -100,6 +105,8 @@ export type DealFormDialogProps = {
   deal: Deal | null;
   projects: Project[];
   clients: Client[];
+  /** Услуги организации — для привязки «основной» услуги сделки. */
+  services: Service[];
   /** Операторы организации — для выбора ответственного. */
   users: User[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
@@ -112,12 +119,14 @@ type FormState = {
   title: string;
   description: string;
   status: DealStatus;
+  type: DealType;
   amount: string;
   currency: string;
   probability: string;
   expected_close_at: string;
   project_id: string;
   client_id: string;
+  service_id: string;
   assigned_to: string;
   attributes: string;
 };
@@ -127,12 +136,14 @@ function emptyForm(projectId = ''): FormState {
     title: '',
     description: '',
     status: 'NEW',
+    type: 'INCOME',
     amount: '',
     currency: DEFAULT_CURRENCY,
     probability: '',
     expected_close_at: '',
     project_id: projectId,
     client_id: '',
+    service_id: '',
     assigned_to: '',
     attributes: '',
   };
@@ -143,12 +154,14 @@ function formFromDeal(d: Deal): FormState {
     title: d.title,
     description: d.description,
     status: d.status,
+    type: d.type,
     amount: d.amount !== null && d.amount !== undefined ? String(d.amount) : '',
     currency: d.currency || DEFAULT_CURRENCY,
     probability: d.probability !== null && d.probability !== undefined ? String(d.probability) : '',
     expected_close_at: d.expected_close_at ?? '',
     project_id: d.project_id ?? '',
     client_id: d.client_id ?? '',
+    service_id: d.service_id ?? '',
     assigned_to: d.assigned_to ?? '',
     attributes:
       d.attributes && Object.keys(d.attributes).length > 0
@@ -162,6 +175,7 @@ export function DealFormDialog({
   deal,
   projects,
   clients,
+  services,
   users,
   defaultProjectId,
   onClose,
@@ -297,6 +311,7 @@ export function DealFormDialog({
       title: form.title.trim(),
       description: form.description.trim(),
       status: form.status,
+      type: form.type,
       currency: (form.currency || DEFAULT_CURRENCY).toUpperCase(),
       attributes,
       ...(amount !== null ? { amount } : {}),
@@ -304,6 +319,7 @@ export function DealFormDialog({
       ...(form.expected_close_at ? { expected_close_at: form.expected_close_at } : {}),
       ...(form.project_id ? { project_id: form.project_id } : {}),
       ...(form.client_id ? { client_id: form.client_id } : {}),
+      ...(form.service_id ? { service_id: form.service_id } : {}),
       ...(form.assigned_to ? { assigned_to: form.assigned_to } : {}),
     };
 
@@ -396,15 +412,20 @@ export function DealFormDialog({
               ))}
             </select>
           </Field>
-          <Field label="Дата закрытия (план)" htmlFor="deal-close" error={errors.expected_close_at}>
-            <input
-              id="deal-close"
-              type="date"
-              value={form.expected_close_at}
+          <Field label="Тип" htmlFor="deal-type">
+            <select
+              id="deal-type"
+              value={form.type}
               disabled={submitting}
-              onChange={(e) => setField('expected_close_at', e.target.value)}
-              className={inputClass(!!errors.expected_close_at)}
-            />
+              onChange={(e) => setField('type', e.target.value as DealType)}
+              className={inputClass(false)}
+            >
+              {DEAL_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {DEAL_TYPE_LABELS[t]}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
 
@@ -455,6 +476,35 @@ export function DealFormDialog({
           </Field>
         </div>
 
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Дата закрытия (план)" htmlFor="deal-close" error={errors.expected_close_at}>
+            <input
+              id="deal-close"
+              type="date"
+              value={form.expected_close_at}
+              disabled={submitting}
+              onChange={(e) => setField('expected_close_at', e.target.value)}
+              className={inputClass(!!errors.expected_close_at)}
+            />
+          </Field>
+          <Field label="Ответственный" htmlFor="deal-assignee" error={errors.assigned_to}>
+            <select
+              id="deal-assignee"
+              value={form.assigned_to}
+              disabled={submitting}
+              onChange={(e) => setField('assigned_to', e.target.value)}
+              className={inputClass(!!errors.assigned_to)}
+            >
+              <option value="">Без ответственного</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.full_name || u.email}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Проект" htmlFor="deal-project" error={errors.project_id}>
             <select
@@ -488,18 +538,18 @@ export function DealFormDialog({
               ))}
             </select>
           </Field>
-          <Field label="Ответственный" htmlFor="deal-assignee" error={errors.assigned_to}>
+          <Field label="Услуга" htmlFor="deal-service" error={errors.service_id}>
             <select
-              id="deal-assignee"
-              value={form.assigned_to}
+              id="deal-service"
+              value={form.service_id}
               disabled={submitting}
-              onChange={(e) => setField('assigned_to', e.target.value)}
-              className={inputClass(!!errors.assigned_to)}
+              onChange={(e) => setField('service_id', e.target.value)}
+              className={inputClass(!!errors.service_id)}
             >
-              <option value="">Без ответственного</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.full_name || u.email}
+              <option value="">Без услуги</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>

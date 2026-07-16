@@ -14,6 +14,7 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { path: '/clients', label: 'Клиенты', icon: 'clients' },
   { path: '/deals', label: 'Сделки', icon: 'deals' },
   { path: '/tasks', label: 'Задачи', icon: 'tasks' },
+  { path: '/processes', label: 'Процессы', icon: 'processes' },
   { path: '/calendar', label: 'Календарь', icon: 'calendar' },
   // Временно скрыты из навигации (роуты и страницы сохранены, доступны по прямому URL):
   // { path: '/bots', label: 'Боты', icon: 'bots' },

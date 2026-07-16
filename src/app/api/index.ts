@@ -52,6 +52,7 @@ export { listDeals, createDeal, updateDeal, deleteDeal } from './deals';
 export type {
   Deal,
   DealStatus,
+  DealType,
   DealSortBy,
   DealListParams,
   DealInput,

@@ -337,6 +337,7 @@ export function ProjectDetailPage() {
             reload={reloadDeals}
             projects={projects}
             clients={clients}
+            services={services}
             users={users}
             defaultProjectId={project.id}
             showProjectColumn={false}

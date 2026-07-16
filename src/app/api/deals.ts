@@ -1,17 +1,24 @@
 import { api } from './client';
 import type { Paginated, SortOrder } from './projects';
 
-export type DealStatus = 'NEW' | 'QUALIFIED' | 'PROPOSAL' | 'NEGOTIATION' | 'WON' | 'LOST';
+export type DealStatus = 'NEW' | 'PENDING' | 'WON' | 'LOST';
+
+/** Тип сделки: доход или расход — для учёта денежного потока. */
+export type DealType = 'INCOME' | 'EXPENSE';
 
 /** Модель сделки (ответ API). */
 export type Deal = {
   id: string;
   project_id: string | null;
   client_id: string | null;
+  /** «Основная» услуга сделки (одна на сделку); null если не задана. */
+  service_id: string | null;
   title: string;
   /** Описание; '' если не задано. */
   description: string;
   status: DealStatus;
+  /** Тип сделки: INCOME (доход) / EXPENSE (расход); по умолчанию INCOME. */
+  type: DealType;
   /** Сумма сделки NUMERIC(14,2), ≥0; null если не задана. */
   amount: number | null;
   /** Валюта, ISO-код из 3 букв в верхнем регистре (RUB, USD, EUR). */
@@ -44,7 +51,9 @@ export type DealListParams = {
   page_size?: number;
   project_id?: string;
   client_id?: string;
+  service_id?: string;
   status?: DealStatus;
+  type?: DealType;
   assigned_to?: string;
   /** Подстрока по названию. */
   search?: string;
@@ -54,20 +63,22 @@ export type DealListParams = {
 
 /**
  * Тело create/update сделки. При update действует PUT-семантика (полная замена):
- * непереданные поля сбрасываются (description → '', status → NEW, currency → USD,
- * amount/probability/expected_close_at → null, привязки → null, attributes → {}).
- * `created_by` и `closed_at` — только чтение, в теле не передаются.
+ * непереданные поля сбрасываются (description → '', status → NEW, type → INCOME,
+ * currency → USD, amount/probability/expected_close_at → null, привязки → null,
+ * attributes → {}). `created_by` и `closed_at` — только чтение, в теле не передаются.
  */
 export type DealInput = {
   title: string;
   description?: string;
   status?: DealStatus;
+  type?: DealType;
   amount?: number | null;
   currency?: string;
   probability?: number | null;
   expected_close_at?: string | null;
   project_id?: string | null;
   client_id?: string | null;
+  service_id?: string | null;
   assigned_to?: string | null;
   attributes?: Record<string, unknown>;
 };
@@ -103,7 +114,9 @@ export function listDeals(
     page_size: params.page_size,
     project_id: params.project_id,
     client_id: params.client_id,
+    service_id: params.service_id,
     status: params.status,
+    type: params.type,
     assigned_to: params.assigned_to,
     search: params.search,
     sort_by: params.sort_by,

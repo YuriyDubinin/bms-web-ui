@@ -1,10 +1,18 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { ApiError, deleteDeal, type Client, type Deal, type Project, type User } from '@app/api';
+import {
+  ApiError,
+  deleteDeal,
+  type Client,
+  type Deal,
+  type Project,
+  type Service,
+  type User,
+} from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { DealFormDialog } from './DealFormDialog';
-import { DEAL_STATUS_LABELS, formatMoney, formatProbability } from './model';
-import { StatusChip } from './StatusChip';
+import { DEAL_STATUS_LABELS, DEAL_TYPE_LABELS, formatMoney, formatProbability } from './model';
+import { StatusChip, TypeChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
 function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
@@ -32,6 +40,8 @@ export type DealsManagerProps = {
   reload: () => void;
   projects: Project[];
   clients: Client[];
+  /** Услуги организации — для привязки услуги к сделке и резолва её названия. */
+  services: Service[];
   /** Операторы организации — для выбора/резолва ответственного. */
   users: User[];
   /** Предвыбранный проект при создании (со страницы проекта сделка создаётся в его разрезе). */
@@ -52,6 +62,7 @@ export function DealsManager({
   reload,
   projects,
   clients,
+  services,
   users,
   defaultProjectId,
   showProjectColumn = true,
@@ -77,6 +88,16 @@ export function DealsManager({
   const userName = useCallback(
     (id: string | null): string => (id ? (userNameById.get(id) ?? '') : ''),
     [userNameById],
+  );
+
+  const serviceNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of services) map.set(s.id, s.name);
+    return map;
+  }, [services]);
+  const serviceName = useCallback(
+    (id: string | null): string => (id ? (serviceNameById.get(id) ?? '') : ''),
+    [serviceNameById],
   );
 
   const [formOpen, setFormOpen] = useState(false);
@@ -147,6 +168,14 @@ export function DealsManager({
         cell: (d) => <StatusChip status={d.status} />,
       },
       {
+        key: 'type',
+        header: 'Тип',
+        value: (d) => DEAL_TYPE_LABELS[d.type],
+        filter: 'select',
+        filterLabel: 'Тип',
+        cell: (d) => <TypeChip type={d.type} />,
+      },
+      {
         key: 'amount',
         header: 'Сумма',
         align: 'right',
@@ -202,8 +231,9 @@ export function DealsManager({
     ];
 
     // Колонка «Проект» нужна только в общем разделе — на странице проекта все сделки его же.
+    // Вставляем перед колонкой «Ответственный» (индекс 5: title, status, type, amount, probability).
     if (showProjectColumn) {
-      cols.splice(4, 0, {
+      cols.splice(5, 0, {
         key: 'project',
         header: 'Проект',
         value: (d) => projectName(d.project_id),
@@ -231,7 +261,8 @@ export function DealsManager({
         {d.description ? (
           <p className="line-clamp-2 text-sm leading-relaxed text-fg-secondary">{d.description}</p>
         ) : null}
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <TypeChip type={d.type} />
           <span className="font-mono text-sm text-fg-primary">{formatMoney(d.amount, d.currency)}</span>
           {d.probability !== null ? (
             <span className="font-mono text-xs text-fg-muted">· {formatProbability(d.probability)}</span>
@@ -239,6 +270,12 @@ export function DealsManager({
         </div>
         {showProjectColumn && name ? (
           <p className="truncate font-mono text-xs text-fg-secondary">{name}</p>
+        ) : null}
+        {serviceName(d.service_id) ? (
+          <p className="min-w-0 truncate text-xs text-fg-secondary">
+            <span className="text-fg-muted">Услуга: </span>
+            {serviceName(d.service_id)}
+          </p>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
           <span className="min-w-0 truncate text-xs text-fg-muted">{assignee || 'Без ответственного'}</span>
@@ -297,6 +334,7 @@ export function DealsManager({
         deal={editing}
         projects={projects}
         clients={clients}
+        services={services}
         users={users}
         defaultProjectId={editing ? undefined : defaultProjectId}
         onClose={() => setFormOpen(false)}

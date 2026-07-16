@@ -9,6 +9,7 @@ import { ServicesPage } from '@app/pages/services';
 import { ClientsPage } from '@app/pages/clients';
 import { DealsPage } from '@app/pages/deals';
 import { TasksPage } from '@app/pages/tasks';
+import { ProcessesPage } from '@app/pages/ProcessesPage';
 import { CalendarPage } from '@app/pages/CalendarPage';
 import { BotsPage } from '@app/pages/BotsPage';
 import { SettingsPage } from '@app/pages/SettingsPage';
@@ -54,6 +55,7 @@ export function App() {
         <Route path="/clients" element={<ClientsPage />} />
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/processes" element={<ProcessesPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/bots" element={<BotsPage />} />
         <Route path="/settings" element={<SettingsPage />} />

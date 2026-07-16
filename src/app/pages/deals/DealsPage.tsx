@@ -3,6 +3,7 @@ import { DealsManager } from './DealsManager';
 import { useDeals } from './useDeals';
 import { useProjects } from '../projects/useProjects';
 import { useClients } from '../clients/useClients';
+import { useServices } from '../services/useServices';
 import { useUsers } from '../tasks/useUsers';
 
 export function DealsPage() {
@@ -10,6 +11,7 @@ export function DealsPage() {
   // Справочники для селектов формы и резолва имён в таблице.
   const { projects } = useProjects();
   const { clients } = useClients();
+  const { services } = useServices();
   const { users } = useUsers();
 
   return (
@@ -23,6 +25,7 @@ export function DealsPage() {
         reload={reload}
         projects={projects}
         clients={clients}
+        services={services}
         users={users}
       />
     </>
