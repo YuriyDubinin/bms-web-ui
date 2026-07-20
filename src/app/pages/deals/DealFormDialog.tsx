@@ -13,7 +13,7 @@ import {
   type User,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal } from '@app/ui';
+import { Button, Modal, SelectSearch } from '@app/ui';
 import { clientName } from '../clients/model';
 import {
   CURRENCIES,
@@ -397,35 +397,23 @@ export function DealFormDialog({
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Этап" htmlFor="deal-status">
-            <select
+          <Field label="Статус" htmlFor="deal-status">
+            <SelectSearch
               id="deal-status"
               value={form.status}
               disabled={submitting}
-              onChange={(e) => setField('status', e.target.value as DealStatus)}
-              className={inputClass(false)}
-            >
-              {DEAL_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {DEAL_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('status', v as DealStatus)}
+              options={DEAL_STATUSES.map((s) => ({ value: s, label: DEAL_STATUS_LABELS[s] }))}
+            />
           </Field>
           <Field label="Тип" htmlFor="deal-type">
-            <select
+            <SelectSearch
               id="deal-type"
               value={form.type}
               disabled={submitting}
-              onChange={(e) => setField('type', e.target.value as DealType)}
-              className={inputClass(false)}
-            >
-              {DEAL_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {DEAL_TYPE_LABELS[t]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('type', v as DealType)}
+              options={DEAL_TYPES.map((t) => ({ value: t, label: DEAL_TYPE_LABELS[t] }))}
+            />
           </Field>
         </div>
 
@@ -445,19 +433,15 @@ export function DealFormDialog({
             />
           </Field>
           <Field label="Валюта" htmlFor="deal-currency" error={errors.currency}>
-            <select
+            <SelectSearch
               id="deal-currency"
               value={form.currency}
               disabled={submitting}
-              onChange={(e) => setField('currency', e.target.value)}
-              className={inputClass(!!errors.currency)}
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} — {c.label}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.currency}
+              searchPlaceholder="Поиск валюты…"
+              onChange={(v) => setField('currency', v)}
+              options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} — ${c.label}` }))}
+            />
           </Field>
           <Field label="Вероятность, %" htmlFor="deal-probability" error={errors.probability}>
             <input
@@ -488,71 +472,67 @@ export function DealFormDialog({
             />
           </Field>
           <Field label="Ответственный" htmlFor="deal-assignee" error={errors.assigned_to}>
-            <select
+            <SelectSearch
               id="deal-assignee"
               value={form.assigned_to}
               disabled={submitting}
-              onChange={(e) => setField('assigned_to', e.target.value)}
-              className={inputClass(!!errors.assigned_to)}
-            >
-              <option value="">Без ответственного</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.full_name || u.email}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.assigned_to}
+              placeholder="Без ответственного"
+              searchPlaceholder="Поиск сотрудника…"
+              onChange={(v) => setField('assigned_to', v)}
+              options={[
+                { value: '', label: 'Без ответственного' },
+                ...users.map((u) => ({ value: u.id, label: u.full_name || u.email })),
+              ]}
+            />
           </Field>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Проект" htmlFor="deal-project" error={errors.project_id}>
-            <select
+            <SelectSearch
               id="deal-project"
               value={form.project_id}
               disabled={submitting}
-              onChange={(e) => setField('project_id', e.target.value)}
-              className={inputClass(!!errors.project_id)}
-            >
-              <option value="">Без проекта</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.project_id}
+              placeholder="Без проекта"
+              searchPlaceholder="Поиск проекта…"
+              onChange={(v) => setField('project_id', v)}
+              options={[
+                { value: '', label: 'Без проекта' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
           </Field>
           <Field label="Клиент" htmlFor="deal-client" error={errors.client_id}>
-            <select
+            <SelectSearch
               id="deal-client"
               value={form.client_id}
               disabled={submitting}
-              onChange={(e) => setField('client_id', e.target.value)}
-              className={inputClass(!!errors.client_id)}
-            >
-              <option value="">Без клиента</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {clientName(c)}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.client_id}
+              placeholder="Без клиента"
+              searchPlaceholder="Поиск клиента…"
+              onChange={(v) => setField('client_id', v)}
+              options={[
+                { value: '', label: 'Без клиента' },
+                ...clients.map((c) => ({ value: c.id, label: clientName(c) })),
+              ]}
+            />
           </Field>
           <Field label="Услуга" htmlFor="deal-service" error={errors.service_id}>
-            <select
+            <SelectSearch
               id="deal-service"
               value={form.service_id}
               disabled={submitting}
-              onChange={(e) => setField('service_id', e.target.value)}
-              className={inputClass(!!errors.service_id)}
-            >
-              <option value="">Без услуги</option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.service_id}
+              placeholder="Без услуги"
+              searchPlaceholder="Поиск услуги…"
+              onChange={(v) => setField('service_id', v)}
+              options={[
+                { value: '', label: 'Без услуги' },
+                ...services.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
           </Field>
         </div>
 

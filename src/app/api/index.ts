@@ -29,6 +29,7 @@ export { listClients, createClient, updateClient, deleteClient } from './clients
 export type {
   Client,
   ClientStatus,
+  ClientSubjectType,
   ClientSortBy,
   ClientListParams,
   ClientInput,

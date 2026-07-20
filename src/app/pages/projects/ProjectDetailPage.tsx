@@ -62,6 +62,13 @@ const TABS: { key: TabKey; label: string }[] = [
   ...SECTIONS.map((s) => ({ key: s.key, label: s.label })),
 ];
 
+/** Порядок KPI-счётчиков (свой, отличается от порядка вкладок): сделки → задачи → клиенты → услуги. */
+const KPI_ORDER: SectionKey[] = ['deals', 'tasks', 'clients', 'services'];
+const KPI_SECTIONS: Section[] = KPI_ORDER.flatMap((key) => {
+  const section = SECTIONS.find((s) => s.key === key);
+  return section ? [section] : [];
+});
+
 export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -204,7 +211,7 @@ export function ProjectDetailPage() {
 
       {/* KPI-счётчики разделов (пока заглушки, клик — переход на вкладку) */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {SECTIONS.map((s) => (
+        {KPI_SECTIONS.map((s) => (
           <button
             key={s.key}
             type="button"

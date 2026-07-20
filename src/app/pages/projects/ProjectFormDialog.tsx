@@ -8,7 +8,7 @@ import {
   type ProjectStatus,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal } from '@app/ui';
+import { Button, Modal, SelectSearch } from '@app/ui';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from './model';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
@@ -334,19 +334,13 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
 
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Статус" htmlFor="project-status">
-            <select
+            <SelectSearch
               id="project-status"
               value={form.status}
               disabled={submitting}
-              onChange={(e) => setField('status', e.target.value as ProjectStatus)}
-              className={inputClass(false)}
-            >
-              {PROJECT_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {PROJECT_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('status', v as ProjectStatus)}
+              options={PROJECT_STATUSES.map((s) => ({ value: s, label: PROJECT_STATUS_LABELS[s] }))}
+            />
           </Field>
 
           <Field label="Дата начала" htmlFor="project-starts" error={errors.starts_at}>

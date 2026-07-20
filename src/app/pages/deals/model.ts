@@ -2,19 +2,19 @@ import type { DealStatus, DealType } from '@app/api';
 // Валюты и денежное форматирование переиспользуем из раздела услуг — единый формат по продукту.
 export { CURRENCIES, DEFAULT_CURRENCY, formatPrice as formatMoney } from '../services/model';
 
-/** Этапы воронки в порядке движения сделки (для канбана и сортировки). */
+/** Статусы сделки в порядке движения (для сортировки и группировки). */
 export const DEAL_STATUSES: DealStatus[] = ['NEW', 'PENDING', 'WON', 'LOST'];
 
 export const DEAL_STATUS_LABELS: Record<DealStatus, string> = {
   NEW: 'Новая',
   PENDING: 'В работе',
-  WON: 'Выиграна',
-  LOST: 'Проиграна',
+  WON: 'Закрыта',
+  LOST: 'Расторгнута',
 };
 
 /**
- * Цветовой тон chip'а этапа (классы токенов). Отражает движение по воронке:
- * серый (новая) → жёлтый (в работе) → зелёный (выиграна) / красный (проиграна).
+ * Цветовой тон chip'а статуса (классы токенов). Отражает движение сделки:
+ * серый (новая) → жёлтый (в работе) → зелёный (закрыта) / красный (расторгнута).
  */
 export const DEAL_STATUS_TONE: Record<DealStatus, string> = {
   NEW: 'bg-bg-2 text-fg-secondary',
@@ -23,7 +23,7 @@ export const DEAL_STATUS_TONE: Record<DealStatus, string> = {
   LOST: 'bg-state-error-muted text-state-error',
 };
 
-/** Терминальные (закрытые) этапы — для них проставляется closed_at. */
+/** Терминальные (закрытые) статусы — для них проставляется closed_at. */
 export const CLOSED_STATUSES: DealStatus[] = ['WON', 'LOST'];
 
 export const DEAL_TYPES: DealType[] = ['INCOME', 'EXPENSE'];

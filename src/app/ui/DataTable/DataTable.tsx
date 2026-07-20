@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { SelectSearch } from '../SelectSearch';
 import type { DataTableColumn, DataTableProps, DataTableView } from './types';
 import { cellText, matchesFilters, matchesQuery, sortItems, uniqueValues } from './utils';
 import {
   CardsIcon,
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   CloseIcon,
@@ -163,27 +163,18 @@ export function DataTable<T>({
           );
         }
         return (
-          <div key={col.key} className="relative w-full sm:w-auto">
-            <select
-              value={current}
-              onChange={(e) => setFilters((prev) => ({ ...prev, [col.key]: e.target.value }))}
-              aria-label={`Фильтр: ${label}`}
-              className={cx(
-                'w-full appearance-none rounded-md border border-border-subtle bg-bg-1 py-2 pl-3 pr-8 text-sm transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent-muted sm:w-auto',
-                current ? 'text-fg-primary' : 'text-fg-secondary',
-              )}
-            >
-              <option value="">{label}: все</option>
-              {uniqueValues(data, col).map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                </option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-fg-muted">
-              <ChevronDownIcon />
-            </span>
-          </div>
+          <SelectSearch
+            key={col.key}
+            value={current}
+            onChange={(v) => setFilters((prev) => ({ ...prev, [col.key]: v }))}
+            ariaLabel={`Фильтр: ${label}`}
+            className="w-full sm:w-48"
+            searchPlaceholder={`Поиск: ${label}`}
+            options={[
+              { value: '', label: `${label}: все` },
+              ...uniqueValues(data, col).map((v) => ({ value: v, label: v })),
+            ]}
+          />
         );
       })}
 

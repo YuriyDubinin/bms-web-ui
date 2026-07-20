@@ -13,7 +13,7 @@ import {
   type User,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal } from '@app/ui';
+import { Button, Modal, SelectSearch } from '@app/ui';
 import { clientName } from '../clients/model';
 import {
   TASK_PRIORITIES,
@@ -358,34 +358,22 @@ export function TaskFormDialog({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Статус" htmlFor="task-status">
-            <select
+            <SelectSearch
               id="task-status"
               value={form.status}
               disabled={submitting}
-              onChange={(e) => setField('status', e.target.value as TaskStatus)}
-              className={inputClass(false)}
-            >
-              {TASK_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {TASK_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('status', v as TaskStatus)}
+              options={TASK_STATUSES.map((s) => ({ value: s, label: TASK_STATUS_LABELS[s] }))}
+            />
           </Field>
           <Field label="Приоритет" htmlFor="task-priority">
-            <select
+            <SelectSearch
               id="task-priority"
               value={form.priority}
               disabled={submitting}
-              onChange={(e) => setField('priority', e.target.value as TaskPriority)}
-              className={inputClass(false)}
-            >
-              {TASK_PRIORITIES.map((p) => (
-                <option key={p} value={p}>
-                  {TASK_PRIORITY_LABELS[p]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('priority', v as TaskPriority)}
+              options={TASK_PRIORITIES.map((p) => ({ value: p, label: TASK_PRIORITY_LABELS[p] }))}
+            />
           </Field>
         </div>
 
@@ -401,71 +389,67 @@ export function TaskFormDialog({
             />
           </Field>
           <Field label="Исполнитель" htmlFor="task-assignee" error={errors.assigned_to}>
-            <select
+            <SelectSearch
               id="task-assignee"
               value={form.assigned_to}
               disabled={submitting}
-              onChange={(e) => setField('assigned_to', e.target.value)}
-              className={inputClass(!!errors.assigned_to)}
-            >
-              <option value="">Без исполнителя</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.full_name || u.email}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.assigned_to}
+              placeholder="Без исполнителя"
+              searchPlaceholder="Поиск исполнителя…"
+              onChange={(v) => setField('assigned_to', v)}
+              options={[
+                { value: '', label: 'Без исполнителя' },
+                ...users.map((u) => ({ value: u.id, label: u.full_name || u.email })),
+              ]}
+            />
           </Field>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Проект" htmlFor="task-project" error={errors.project_id}>
-            <select
+            <SelectSearch
               id="task-project"
               value={form.project_id}
               disabled={submitting}
-              onChange={(e) => setField('project_id', e.target.value)}
-              className={inputClass(!!errors.project_id)}
-            >
-              <option value="">Без проекта</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.project_id}
+              placeholder="Без проекта"
+              searchPlaceholder="Поиск проекта…"
+              onChange={(v) => setField('project_id', v)}
+              options={[
+                { value: '', label: 'Без проекта' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
           </Field>
           <Field label="Клиент" htmlFor="task-client" error={errors.client_id}>
-            <select
+            <SelectSearch
               id="task-client"
               value={form.client_id}
               disabled={submitting}
-              onChange={(e) => setField('client_id', e.target.value)}
-              className={inputClass(!!errors.client_id)}
-            >
-              <option value="">Без клиента</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {clientName(c)}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.client_id}
+              placeholder="Без клиента"
+              searchPlaceholder="Поиск клиента…"
+              onChange={(v) => setField('client_id', v)}
+              options={[
+                { value: '', label: 'Без клиента' },
+                ...clients.map((c) => ({ value: c.id, label: clientName(c) })),
+              ]}
+            />
           </Field>
           <Field label="Сделка" htmlFor="task-deal" error={errors.deal_id}>
-            <select
+            <SelectSearch
               id="task-deal"
               value={form.deal_id}
               disabled={submitting}
-              onChange={(e) => setField('deal_id', e.target.value)}
-              className={inputClass(!!errors.deal_id)}
-            >
-              <option value="">Без сделки</option>
-              {deals.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.deal_id}
+              placeholder="Без сделки"
+              searchPlaceholder="Поиск сделки…"
+              onChange={(v) => setField('deal_id', v)}
+              options={[
+                { value: '', label: 'Без сделки' },
+                ...deals.map((d) => ({ value: d.id, label: d.title })),
+              ]}
+            />
           </Field>
         </div>
 

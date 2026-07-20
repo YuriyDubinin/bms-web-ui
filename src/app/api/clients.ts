@@ -3,6 +3,9 @@ import type { Paginated, SortOrder } from './projects';
 
 export type ClientStatus = 'LEAD' | 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 
+/** Вид субъекта: физическое или юридическое лицо. Задаётся явно (не выводится из ФИО/компании). */
+export type ClientSubjectType = 'INDIVIDUAL' | 'LEGAL_ENTITY';
+
 /** Модель клиента (ответ API). */
 export type Client = {
   id: string;
@@ -19,6 +22,8 @@ export type Client = {
   /** Телефон (свободный формат); '' если не задан. */
   phone: string;
   status: ClientStatus;
+  /** Вид субъекта; всегда присутствует (по умолчанию INDIVIDUAL). */
+  subject_type: ClientSubjectType;
   /** Источник/канал привлечения (свободный текст); '' если не задан. */
   source: string;
   /** Адрес — произвольный JSON. ВНИМАНИЕ: приходит null, если не задан (в отличие от attributes). */
@@ -42,6 +47,7 @@ export type ClientListParams = {
   /** Только клиенты этого проекта. */
   project_id?: string;
   status?: ClientStatus;
+  subject_type?: ClientSubjectType;
   /** Подстрока по имени, фамилии, компании, email и телефону. */
   search?: string;
   sort_by?: ClientSortBy;
@@ -63,6 +69,8 @@ export type ClientInput = {
   email?: string;
   phone?: string;
   status?: ClientStatus;
+  /** Вид субъекта; при update отправлять всегда (PUT-семантика), иначе сбросится в INDIVIDUAL. */
+  subject_type?: ClientSubjectType;
   source?: string;
   project_id?: string | null;
   address?: Record<string, unknown> | null;
@@ -72,6 +80,12 @@ export type ClientInput = {
 export type UpdateClientInput = ClientInput & { id: string };
 
 export type DeleteClientResponse = { id: string; deleted_at: string };
+
+/**
+ * Клиентские эндпоинты (особенно create/update) на бэкенде отвечают медленно — иногда >20с.
+ * Даём увеличенный таймаут, чтобы сохранение и загрузка списка не срывались раньше времени.
+ */
+const CLIENTS_TIMEOUT_MS = 45_000;
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
   const qs = new URLSearchParams();
@@ -93,21 +107,30 @@ export function listClients(
     page_size: params.page_size,
     project_id: params.project_id,
     status: params.status,
+    subject_type: params.subject_type,
     search: params.search,
     sort_by: params.sort_by,
     order: params.order,
   });
-  return api.get<Paginated<Client>>(`/clients/list${query}`, { token, signal });
+  return api.get<Paginated<Client>>(`/clients/list${query}`, {
+    token,
+    signal,
+    timeoutMs: CLIENTS_TIMEOUT_MS,
+  });
 }
 
 export function createClient(token: string, input: ClientInput): Promise<Client> {
-  return api.post<Client>('/clients/create', input, { token });
+  return api.post<Client>('/clients/create', input, { token, timeoutMs: CLIENTS_TIMEOUT_MS });
 }
 
 export function updateClient(token: string, input: UpdateClientInput): Promise<Client> {
-  return api.put<Client>('/clients/update', input, { token });
+  return api.put<Client>('/clients/update', input, { token, timeoutMs: CLIENTS_TIMEOUT_MS });
 }
 
 export function deleteClient(token: string, id: string): Promise<DeleteClientResponse> {
-  return api.delete<DeleteClientResponse>('/clients/delete', { id }, { token });
+  return api.delete<DeleteClientResponse>(
+    '/clients/delete',
+    { id },
+    { token, timeoutMs: CLIENTS_TIMEOUT_MS },
+  );
 }

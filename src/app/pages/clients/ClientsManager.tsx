@@ -3,8 +3,15 @@ import { ApiError, deleteClient, type Client, type Project } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { ClientFormDialog } from './ClientFormDialog';
-import { CLIENT_STATUS_LABELS, clientName, clientSubtitle, formatAddress } from './model';
-import { StatusChip } from './StatusChip';
+import {
+  CLIENT_STATUS_LABELS,
+  CLIENT_SUBJECT_TYPE_LABELS,
+  clientName,
+  clientSubjectType,
+  clientSubtitle,
+  formatAddress,
+} from './model';
+import { StatusChip, SubjectTypeChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
 function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
@@ -157,6 +164,14 @@ export function ClientsManager({
           ),
       },
       {
+        key: 'subject_type',
+        header: 'Вид',
+        value: (c) => CLIENT_SUBJECT_TYPE_LABELS[clientSubjectType(c)],
+        filter: 'select',
+        filterLabel: 'Вид',
+        cell: (c) => <SubjectTypeChip client={c} />,
+      },
+      {
         key: 'status',
         header: 'Статус',
         value: (c) => CLIENT_STATUS_LABELS[c.status],
@@ -214,7 +229,10 @@ export function ClientsManager({
               <p className="truncate text-[11px] text-fg-muted">{subtitle}</p>
             ) : null}
           </div>
-          <StatusChip status={c.status} />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <StatusChip status={c.status} />
+            <SubjectTypeChip client={c} />
+          </div>
         </div>
         <div className="min-w-0 space-y-0.5">
           {c.email ? <p className="truncate text-sm text-fg-secondary">{c.email}</p> : null}

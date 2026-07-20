@@ -6,17 +6,22 @@ import {
   type Client,
   type ClientInput,
   type ClientStatus,
+  type ClientSubjectType,
   type Project,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal } from '@app/ui';
+import { Button, Modal, SelectSearch } from '@app/ui';
 import {
   ADDRESS_COMMENT_KEY,
   ADDRESS_FIELDS,
   CLIENT_STATUSES,
   CLIENT_STATUS_LABELS,
+  CLIENT_SUBJECT_TYPES,
+  CLIENT_SUBJECT_TYPE_LABELS,
   clientName,
+  clientSubjectType,
 } from './model';
+import { BuildingIcon, UserIcon } from './icons';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
@@ -106,6 +111,7 @@ type FormState = {
   email: string;
   phone: string;
   status: ClientStatus;
+  subject_type: ClientSubjectType;
   source: string;
   project_id: string;
   address: Record<string, string>;
@@ -124,6 +130,7 @@ function emptyForm(projectId = ''): FormState {
     email: '',
     phone: '',
     status: 'LEAD',
+    subject_type: 'INDIVIDUAL',
     source: '',
     project_id: projectId,
     address: emptyAddress(),
@@ -146,6 +153,7 @@ function formFromClient(c: Client): FormState {
     email: c.email,
     phone: c.phone,
     status: c.status,
+    subject_type: clientSubjectType(c),
     source: c.source,
     project_id: c.project_id ?? '',
     address,
@@ -292,6 +300,8 @@ export function ClientFormDialog({
       email: form.email.trim(),
       phone: form.phone.trim(),
       status: form.status,
+      // Всегда отправляем текущий вид субъекта: PUT — полная замена, иначе сбросится в INDIVIDUAL.
+      subject_type: form.subject_type,
       source: form.source.trim(),
       attributes,
       ...(form.project_id ? { project_id: form.project_id } : {}),
@@ -340,6 +350,38 @@ export function ClientFormDialog({
             {formError}
           </div>
         ) : null}
+
+        {/* Вид субъекта — физлицо/юрлицо. Задаётся явно, не выводится из ФИО/компании. */}
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <span className="text-xs font-medium text-fg-secondary">Вид субъекта</span>
+          <div
+            role="radiogroup"
+            aria-label="Вид субъекта"
+            className="flex items-center gap-1 rounded-md border border-border-subtle bg-bg-2 p-1"
+          >
+            {CLIENT_SUBJECT_TYPES.map((t) => {
+              const active = form.subject_type === t;
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={submitting}
+                  onClick={() => setField('subject_type', t)}
+                  className={cx(
+                    'flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors duration-150',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50',
+                    active ? 'bg-accent-muted text-accent' : 'text-fg-muted hover:text-fg-secondary',
+                  )}
+                >
+                  {t === 'LEGAL_ENTITY' ? <BuildingIcon size={15} /> : <UserIcon size={15} />}
+                  {CLIENT_SUBJECT_TYPE_LABELS[t]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Имя / компания — хотя бы одно обязательно */}
         <div className="flex flex-col gap-4">
@@ -434,19 +476,13 @@ export function ClientFormDialog({
         {/* Статус / источник / проект */}
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Статус" htmlFor="client-status">
-            <select
+            <SelectSearch
               id="client-status"
               value={form.status}
               disabled={submitting}
-              onChange={(e) => setField('status', e.target.value as ClientStatus)}
-              className={inputClass(false)}
-            >
-              {CLIENT_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {CLIENT_STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setField('status', v as ClientStatus)}
+              options={CLIENT_STATUSES.map((s) => ({ value: s, label: CLIENT_STATUS_LABELS[s] }))}
+            />
           </Field>
           <Field label="Источник" htmlFor="client-source" error={errors.source}>
             <input
@@ -464,23 +500,22 @@ export function ClientFormDialog({
             />
           </Field>
           <Field label="Проект" htmlFor="client-project" error={errors.project_id}>
-            <select
+            <SelectSearch
               id="client-project"
               value={form.project_id}
               disabled={submitting}
-              onChange={(e) => {
-                setField('project_id', e.target.value);
+              hasError={!!errors.project_id}
+              placeholder="Без проекта"
+              searchPlaceholder="Поиск проекта…"
+              onChange={(v) => {
+                setField('project_id', v);
                 clearError('project_id');
               }}
-              className={inputClass(!!errors.project_id)}
-            >
-              <option value="">Без проекта</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: 'Без проекта' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
           </Field>
         </div>
 

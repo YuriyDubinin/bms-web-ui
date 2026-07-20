@@ -64,9 +64,10 @@ describe('DataTable component', () => {
     expect(screen.queryByText('Бета')).not.toBeInTheDocument();
   });
 
-  it('фильтрует по колонке через select', () => {
+  it('фильтрует по колонке через выпадающий список', () => {
     setup();
-    fireEvent.change(screen.getByLabelText('Фильтр: Статус'), { target: { value: 'lead' } });
+    fireEvent.click(screen.getByLabelText('Фильтр: Статус'));
+    fireEvent.click(screen.getByRole('option', { name: 'lead' }));
     expect(screen.getByText('Бета')).toBeInTheDocument();
     expect(screen.queryByText('Альфа')).not.toBeInTheDocument();
   });

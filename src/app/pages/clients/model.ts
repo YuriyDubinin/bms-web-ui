@@ -1,4 +1,4 @@
-import type { Client, ClientStatus } from '@app/api';
+import type { Client, ClientStatus, ClientSubjectType } from '@app/api';
 
 export const CLIENT_STATUSES: ClientStatus[] = ['LEAD', 'ACTIVE', 'INACTIVE', 'ARCHIVED'];
 
@@ -20,6 +20,28 @@ export const CLIENT_STATUS_TONE: Record<ClientStatus, string> = {
   INACTIVE: 'bg-state-warning-muted text-state-warning',
   ARCHIVED: 'bg-bg-2 text-fg-muted',
 };
+
+/** Вид субъекта: физическое (по умолчанию) и юридическое лицо. */
+export const CLIENT_SUBJECT_TYPES: ClientSubjectType[] = ['INDIVIDUAL', 'LEGAL_ENTITY'];
+
+export const CLIENT_SUBJECT_TYPE_LABELS: Record<ClientSubjectType, string> = {
+  INDIVIDUAL: 'Физлицо',
+  LEGAL_ENTITY: 'Юрлицо',
+};
+
+/** Тон chip'а вида субъекта: физлицо — нейтральный, юрлицо — info (акцент на организации). */
+export const CLIENT_SUBJECT_TYPE_TONE: Record<ClientSubjectType, string> = {
+  INDIVIDUAL: 'bg-bg-2 text-fg-secondary',
+  LEGAL_ENTITY: 'bg-state-info-muted text-state-info',
+};
+
+/**
+ * Вид субъекта клиента с защитой от устаревших записей: если поле по какой-то причине
+ * не пришло с сервера, считаем клиента физлицом (серверный дефолт — INDIVIDUAL).
+ */
+export function clientSubjectType(c: Client): ClientSubjectType {
+  return c.subject_type ?? 'INDIVIDUAL';
+}
 
 /**
  * Отображаемое имя клиента: «Имя Фамилия», иначе название компании, иначе «—».

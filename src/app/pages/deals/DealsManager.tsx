@@ -161,10 +161,10 @@ export function DealsManager({
       },
       {
         key: 'status',
-        header: 'Этап',
+        header: 'Статус',
         value: (d) => DEAL_STATUS_LABELS[d.status],
         filter: 'select',
-        filterLabel: 'Этап',
+        filterLabel: 'Статус',
         cell: (d) => <StatusChip status={d.status} />,
       },
       {

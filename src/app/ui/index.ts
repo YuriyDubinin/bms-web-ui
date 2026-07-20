@@ -17,3 +17,6 @@ export type { ModalProps } from './Modal';
 
 export { ConfirmDialog } from './ConfirmDialog';
 export type { ConfirmDialogProps } from './ConfirmDialog';
+
+export { SelectSearch } from './SelectSearch';
+export type { SelectSearchProps, SelectOption } from './SelectSearch';

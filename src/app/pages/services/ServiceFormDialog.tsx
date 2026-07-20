@@ -9,7 +9,7 @@ import {
   type ServiceStatus,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal } from '@app/ui';
+import { Button, Modal, SelectSearch } from '@app/ui';
 import {
   CURRENCIES,
   DEFAULT_CURRENCY,
@@ -342,20 +342,19 @@ export function ServiceFormDialog({
             error={errors.project_id}
             hint="«Домашнее» направление услуги. Можно не выбирать."
           >
-            <select
+            <SelectSearch
               id="service-project"
               value={form.project_id}
               disabled={submitting}
-              onChange={(e) => setField('project_id', e.target.value)}
-              className={inputClass(!!errors.project_id)}
-            >
-              <option value="">Без проекта</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.project_id}
+              placeholder="Без проекта"
+              onChange={(v) => setField('project_id', v)}
+              options={[
+                { value: '', label: 'Без проекта' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+              searchPlaceholder="Поиск проекта…"
+            />
           </Field>
 
           <Field
@@ -407,19 +406,15 @@ export function ServiceFormDialog({
           </Field>
 
           <Field label="Валюта" htmlFor="service-currency" error={errors.currency}>
-            <select
+            <SelectSearch
               id="service-currency"
               value={form.currency}
               disabled={submitting}
-              onChange={(e) => setField('currency', e.target.value)}
-              className={inputClass(!!errors.currency)}
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} — {c.label}
-                </option>
-              ))}
-            </select>
+              hasError={!!errors.currency}
+              onChange={(v) => setField('currency', v)}
+              options={CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} — ${c.label}` }))}
+              searchPlaceholder="Поиск валюты…"
+            />
           </Field>
 
           <Field label="Длительность, мин" htmlFor="service-duration" error={errors.duration_min}>
@@ -439,19 +434,13 @@ export function ServiceFormDialog({
         </div>
 
         <Field label="Статус" htmlFor="service-status">
-          <select
+          <SelectSearch
             id="service-status"
             value={form.status}
             disabled={submitting}
-            onChange={(e) => setField('status', e.target.value as ServiceStatus)}
-            className={inputClass(false)}
-          >
-            {SERVICE_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {SERVICE_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
+            onChange={(v) => setField('status', v as ServiceStatus)}
+            options={SERVICE_STATUSES.map((s) => ({ value: s, label: SERVICE_STATUS_LABELS[s] }))}
+          />
         </Field>
 
         <Field

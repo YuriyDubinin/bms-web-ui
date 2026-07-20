@@ -47,3 +47,24 @@ export function TrashIcon({ size = 15 }: { size?: number }) {
     </Glyph>
   );
 }
+
+/** Физлицо — силуэт человека. */
+export function UserIcon({ size = 13 }: { size?: number }) {
+  return (
+    <Glyph size={size}>
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </Glyph>
+  );
+}
+
+/** Юрлицо — здание/организация. */
+export function BuildingIcon({ size = 13 }: { size?: number }) {
+  return (
+    <Glyph size={size}>
+      <path d="M3 21h18" />
+      <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16" />
+      <path d="M9 7h1M9 11h1M9 15h1M14 7h1M14 11h1M14 15h1" />
+    </Glyph>
+  );
+}
