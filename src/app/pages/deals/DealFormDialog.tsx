@@ -111,6 +111,8 @@ export type DealFormDialogProps = {
   users: User[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
   defaultProjectId?: string;
+  /** Предзаполненная дата закрытия при создании из календаря (YYYY-MM-DD). */
+  defaultCloseAt?: string;
   onClose: () => void;
   onSaved: () => void;
 };
@@ -131,7 +133,7 @@ type FormState = {
   attributes: string;
 };
 
-function emptyForm(projectId = ''): FormState {
+function emptyForm(projectId = '', closeDate = ''): FormState {
   return {
     title: '',
     description: '',
@@ -140,7 +142,7 @@ function emptyForm(projectId = ''): FormState {
     amount: '',
     currency: DEFAULT_CURRENCY,
     probability: '',
-    expected_close_at: '',
+    expected_close_at: closeDate,
     project_id: projectId,
     client_id: '',
     service_id: '',
@@ -179,6 +181,7 @@ export function DealFormDialog({
   services,
   users,
   defaultProjectId,
+  defaultCloseAt,
   onClose,
   onSaved,
 }: DealFormDialogProps) {
@@ -193,11 +196,11 @@ export function DealFormDialog({
   // Заполняем форму при открытии: PUT перезаписывает сделку целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(deal ? formFromDeal(deal) : emptyForm(defaultProjectId));
+    setForm(deal ? formFromDeal(deal) : emptyForm(defaultProjectId, defaultCloseAt));
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, deal, defaultProjectId]);
+  }, [open, deal, defaultProjectId, defaultCloseAt]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

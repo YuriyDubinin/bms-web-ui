@@ -9,12 +9,17 @@ export type UseProcesses = {
   reload: () => void;
 };
 
+export type UseProcessesParams = {
+  /** Ограничить выборку процессами этого проекта (серверный фильтр project_id). */
+  projectId?: string;
+};
+
 /**
- * Загружает процессы организации. Берём целиком (page_size=100) и отдаём в клиентский
- * DataTable — он сам делает поиск, фильтрацию, сортировку и пагинацию.
- * При 401 — разлогин через общий useAuth.
+ * Загружает процессы организации (или конкретного проекта, если задан projectId).
+ * Берём целиком (page_size=100) и отдаём в клиентский DataTable — он сам делает поиск,
+ * фильтрацию, сортировку и пагинацию. При 401 — разлогин через общий useAuth.
  */
-export function useProcesses(): UseProcesses {
+export function useProcesses({ projectId }: UseProcessesParams = {}): UseProcesses {
   const { token, logout } = useAuth();
   const [processes, setProcesses] = useState<Process[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,7 +36,13 @@ export function useProcesses(): UseProcesses {
 
     listProcesses(
       token,
-      { page: 1, page_size: 100, sort_by: 'created_at', order: 'desc' },
+      {
+        page: 1,
+        page_size: 100,
+        sort_by: 'created_at',
+        order: 'desc',
+        ...(projectId ? { project_id: projectId } : {}),
+      },
       controller.signal,
     )
       .then((res) => {
@@ -51,7 +62,7 @@ export function useProcesses(): UseProcesses {
       });
 
     return () => controller.abort();
-  }, [token, logout, reloadKey]);
+  }, [token, logout, reloadKey, projectId]);
 
   return { processes, isLoading, error, reload };
 }

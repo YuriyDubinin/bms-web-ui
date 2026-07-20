@@ -25,3 +25,17 @@ export function formatDateTime(iso: string | null): string {
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('ru-RU');
 }
+
+/** YYYY-MM-DD → DD.MM.YYYY (для starts_at/ends_at). */
+export function formatDateOnly(value: string | null): string {
+  if (!value) return '—';
+  const [y, m, d] = value.split('-');
+  if (!y || !m || !d) return value;
+  return `${d}.${m}.${y}`;
+}
+
+/** Читаемый плановый период процесса из дат начала/окончания. '—' если обе пусты. */
+export function formatPeriod(startsAt: string | null, endsAt: string | null): string {
+  if (!startsAt && !endsAt) return '—';
+  return `${formatDateOnly(startsAt)} → ${formatDateOnly(endsAt)}`;
+}

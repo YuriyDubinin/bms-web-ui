@@ -1,9 +1,12 @@
 import { PageHeader } from '../PageHeader';
 import { ProcessesManager } from './ProcessesManager';
 import { useProcesses } from './useProcesses';
+import { useProjects } from '../projects/useProjects';
 
 export function ProcessesPage() {
   const { processes, isLoading, error, reload } = useProcesses();
+  // Проекты нужны для выбора проекта в форме и показа его имени в таблице.
+  const { projects } = useProjects();
 
   return (
     <>
@@ -14,6 +17,7 @@ export function ProcessesPage() {
         isLoading={isLoading}
         error={error}
         reload={reload}
+        projects={projects}
       />
     </>
   );

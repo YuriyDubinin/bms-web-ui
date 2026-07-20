@@ -13,19 +13,22 @@ import {
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { TaskFormDialog } from './TaskFormDialog';
-import {
-  TASK_PRIORITY_LABELS,
-  TASK_STATUS_LABELS,
-  formatDueAt,
-  isOverdue,
-} from './model';
+import { TASK_PRIORITY_LABELS, TASK_STATUS_LABELS, formatDueAt, isOverdue } from './model';
 import { PriorityChip, StatusChip } from './chips';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
 
-function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function RowAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -295,7 +298,9 @@ export function TasksManager({
           </p>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
-          <span className="min-w-0 truncate text-xs text-fg-muted">{assignee || 'Без исполнителя'}</span>
+          <span className="min-w-0 truncate text-xs text-fg-muted">
+            {assignee || 'Без исполнителя'}
+          </span>
           <div className="flex shrink-0 items-center gap-1">
             <RowAction label="Редактировать" onClick={() => openEdit(t)}>
               <PencilIcon />
@@ -325,7 +330,6 @@ export function TasksManager({
         columns={columns}
         getRowId={(t) => t.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по заголовку задачи…"

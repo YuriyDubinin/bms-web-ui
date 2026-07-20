@@ -73,6 +73,10 @@ export type ProjectFormDialogProps = {
   open: boolean;
   /** null — режим создания; объект — режим редактирования. */
   project: Project | null;
+  /** Предзаполненная дата начала при создании из календаря (YYYY-MM-DD). */
+  defaultStartsAt?: string;
+  /** Предзаполненная дата окончания (при выделении диапазона дней; YYYY-MM-DD). */
+  defaultEndsAt?: string;
   onClose: () => void;
   onSaved: () => void;
 };
@@ -88,15 +92,15 @@ type FormState = {
   attributes: string;
 };
 
-function emptyForm(): FormState {
+function emptyForm(startsAt = '', endsAt = ''): FormState {
   return {
     name: '',
     slug: '',
     direction: '',
     description: '',
     status: 'ACTIVE',
-    starts_at: '',
-    ends_at: '',
+    starts_at: startsAt,
+    ends_at: endsAt,
     attributes: '',
   };
 }
@@ -117,7 +121,14 @@ function formFromProject(p: Project): FormState {
   };
 }
 
-export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFormDialogProps) {
+export function ProjectFormDialog({
+  open,
+  project,
+  defaultStartsAt,
+  defaultEndsAt,
+  onClose,
+  onSaved,
+}: ProjectFormDialogProps) {
   const { token, logout } = useAuth();
   const isEdit = !!project;
 
@@ -129,11 +140,11 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
   // Заполняем форму при открытии: PUT перезаписывает проект целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(project ? formFromProject(project) : emptyForm());
+    setForm(project ? formFromProject(project) : emptyForm(defaultStartsAt, defaultEndsAt));
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, project]);
+  }, [open, project, defaultStartsAt, defaultEndsAt]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

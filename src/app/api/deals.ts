@@ -52,11 +52,17 @@ export type DealListParams = {
   project_id?: string;
   client_id?: string;
   service_id?: string;
+  /** Привязка к процессу — для календарного слоя/фильтра. */
+  process_id?: string;
   status?: DealStatus;
   type?: DealType;
   assigned_to?: string;
   /** Подстрока по названию. */
   search?: string;
+  /** Оконный фильтр календаря: expected_close_at ≥ этой даты (YYYY-MM-DD / RFC3339). */
+  close_from?: string;
+  /** Оконный фильтр календаря: expected_close_at ≤ этой даты (верхняя граница = конец дня). */
+  close_to?: string;
   sort_by?: DealSortBy;
   order?: SortOrder;
 };
@@ -115,10 +121,13 @@ export function listDeals(
     project_id: params.project_id,
     client_id: params.client_id,
     service_id: params.service_id,
+    process_id: params.process_id,
     status: params.status,
     type: params.type,
     assigned_to: params.assigned_to,
     search: params.search,
+    close_from: params.close_from,
+    close_to: params.close_to,
     sort_by: params.sort_by,
     order: params.order,
   });

@@ -13,6 +13,7 @@ import { ServicesManager, useServices } from '../services';
 import { ClientsManager, useClients } from '../clients';
 import { TasksManager, useTasks, useUsers } from '../tasks';
 import { DealsManager, useDeals } from '../deals';
+import { ProcessesManager, useProcesses } from '../processes';
 
 function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
@@ -40,7 +41,7 @@ function MetaRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-type SectionKey = 'clients' | 'services' | 'tasks' | 'deals';
+type SectionKey = 'clients' | 'services' | 'tasks' | 'deals' | 'processes';
 type TabKey = 'overview' | SectionKey;
 
 type Section = {
@@ -49,25 +50,22 @@ type Section = {
   icon: NavIconName;
 };
 
-/** Разделы связанных сущностей проекта — для KPI-счётчиков и вкладок. */
+/**
+ * Разделы связанных сущностей проекта — единый источник порядка для KPI-счётчиков и вкладок.
+ * Порядок совпадает с боковой панелью: услуги → клиенты → сделки → задачи → процессы.
+ */
 const SECTIONS: Section[] = [
-  { key: 'clients', label: 'Клиенты', icon: 'clients' },
   { key: 'services', label: 'Услуги', icon: 'services' },
-  { key: 'tasks', label: 'Задачи', icon: 'tasks' },
+  { key: 'clients', label: 'Клиенты', icon: 'clients' },
   { key: 'deals', label: 'Сделки', icon: 'deals' },
+  { key: 'tasks', label: 'Задачи', icon: 'tasks' },
+  { key: 'processes', label: 'Процессы', icon: 'processes' },
 ];
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'overview', label: 'Обзор' },
   ...SECTIONS.map((s) => ({ key: s.key, label: s.label })),
 ];
-
-/** Порядок KPI-счётчиков (свой, отличается от порядка вкладок): сделки → задачи → клиенты → услуги. */
-const KPI_ORDER: SectionKey[] = ['deals', 'tasks', 'clients', 'services'];
-const KPI_SECTIONS: Section[] = KPI_ORDER.flatMap((key) => {
-  const section = SECTIONS.find((s) => s.key === key);
-  return section ? [section] : [];
-});
 
 export function ProjectDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
@@ -104,6 +102,13 @@ export function ProjectDetailPage() {
     error: dealsError,
     reload: reloadDeals,
   } = useDeals({ projectId: id });
+  // Процессы этого проекта — для счётчика в KPI и вкладки «Процессы».
+  const {
+    processes,
+    isLoading: processesLoading,
+    error: processesError,
+    reload: reloadProcesses,
+  } = useProcesses({ projectId: id });
 
   const project = projects.find((p) => p.id === id) ?? null;
 
@@ -183,6 +188,16 @@ export function ProjectDetailPage() {
 
   const hasAttributes = Object.keys(project.attributes).length > 0;
 
+  // Значения KPI-счётчиков по ключу раздела. Счётчик всегда показывает число: 0 (пока
+  // пусто/грузится/ошибка) или реальное количество — без индикатора загрузки «…».
+  const sectionCounts: Record<SectionKey, number> = {
+    services: services.length,
+    clients: clients.length,
+    deals: deals.length,
+    tasks: tasks.length,
+    processes: processes.length,
+  };
+
   return (
     <>
       {backLink}
@@ -209,9 +224,9 @@ export function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* KPI-счётчики разделов (пока заглушки, клик — переход на вкладку) */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {KPI_SECTIONS.map((s) => (
+      {/* KPI-счётчики разделов (клик — переход на вкладку) */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        {SECTIONS.map((s) => (
           <button
             key={s.key}
             type="button"
@@ -223,23 +238,7 @@ export function ProjectDetailPage() {
               <span className="text-xs">{s.label}</span>
             </span>
             <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-fg-primary">
-              {s.key === 'services'
-                ? servicesLoading
-                  ? '…'
-                  : services.length
-                : s.key === 'clients'
-                  ? clientsLoading
-                    ? '…'
-                    : clients.length
-                  : s.key === 'tasks'
-                    ? tasksLoading
-                      ? '…'
-                      : tasks.length
-                    : s.key === 'deals'
-                      ? dealsLoading
-                        ? '…'
-                        : deals.length
-                      : '—'}
+              {sectionCounts[s.key]}
             </p>
           </button>
         ))}
@@ -347,6 +346,16 @@ export function ProjectDetailPage() {
             clients={clients}
             services={services}
             users={users}
+            defaultProjectId={project.id}
+            showProjectColumn={false}
+          />
+        ) : tab === 'processes' ? (
+          <ProcessesManager
+            processes={processes}
+            isLoading={processesLoading}
+            error={processesError}
+            reload={reloadProcesses}
+            projects={projects}
             defaultProjectId={project.id}
             showProjectColumn={false}
           />

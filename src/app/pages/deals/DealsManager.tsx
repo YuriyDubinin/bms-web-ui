@@ -15,7 +15,15 @@ import { DEAL_STATUS_LABELS, DEAL_TYPE_LABELS, formatMoney, formatProbability } 
 import { StatusChip, TypeChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
-function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function RowAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -183,7 +191,9 @@ export function DealsManager({
         searchable: false,
         sortable: true,
         cell: (d) => (
-          <span className="font-mono text-xs text-fg-primary">{formatMoney(d.amount, d.currency)}</span>
+          <span className="font-mono text-xs text-fg-primary">
+            {formatMoney(d.amount, d.currency)}
+          </span>
         ),
       },
       {
@@ -194,7 +204,9 @@ export function DealsManager({
         searchable: false,
         sortable: true,
         cell: (d) => (
-          <span className="font-mono text-xs text-fg-secondary">{formatProbability(d.probability)}</span>
+          <span className="font-mono text-xs text-fg-secondary">
+            {formatProbability(d.probability)}
+          </span>
         ),
       },
       {
@@ -263,9 +275,13 @@ export function DealsManager({
         ) : null}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <TypeChip type={d.type} />
-          <span className="font-mono text-sm text-fg-primary">{formatMoney(d.amount, d.currency)}</span>
+          <span className="font-mono text-sm text-fg-primary">
+            {formatMoney(d.amount, d.currency)}
+          </span>
           {d.probability !== null ? (
-            <span className="font-mono text-xs text-fg-muted">· {formatProbability(d.probability)}</span>
+            <span className="font-mono text-xs text-fg-muted">
+              · {formatProbability(d.probability)}
+            </span>
           ) : null}
         </div>
         {showProjectColumn && name ? (
@@ -278,7 +294,9 @@ export function DealsManager({
           </p>
         ) : null}
         <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
-          <span className="min-w-0 truncate text-xs text-fg-muted">{assignee || 'Без ответственного'}</span>
+          <span className="min-w-0 truncate text-xs text-fg-muted">
+            {assignee || 'Без ответственного'}
+          </span>
           <div className="flex shrink-0 items-center gap-1">
             <RowAction label="Редактировать" onClick={() => openEdit(d)}>
               <PencilIcon />
@@ -308,7 +326,6 @@ export function DealsManager({
         columns={columns}
         getRowId={(d) => d.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию сделки…"

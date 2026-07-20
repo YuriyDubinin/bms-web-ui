@@ -77,4 +77,33 @@ export type {
   UpdateProcessInput,
   DeleteProcessResponse,
 } from './processes';
+export {
+  getSummaryStats,
+  getDealsStats,
+  getClientsStats,
+  getTasksStats,
+  getProjectsStats,
+  getServicesStats,
+  getProcessesStats,
+  getTimeseries,
+} from './stats';
+export type {
+  StatsBucket,
+  FinanceStat,
+  StatsPeriod,
+  SummaryStats,
+  DealsStats,
+  ClientsStats,
+  TasksStats,
+  ProjectsStats,
+  ServicesStats,
+  ProcessesStats,
+  TimeseriesMetric,
+  TimeseriesInterval,
+  TimeseriesPoint,
+  TimeseriesResponse,
+  TimeseriesParams,
+} from './stats';
+export { getCalendarAgenda } from './calendar';
+export type { CalendarEntityType, AgendaItem, AgendaParams } from './calendar';
 export { API_BASE_URL } from './config';

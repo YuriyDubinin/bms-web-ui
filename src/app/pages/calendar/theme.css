@@ -1,0 +1,137 @@
+/*
+ * Тема FullCalendar под дизайн-систему BMS. Всё заскоуплено в .bms-calendar, чтобы
+ * не течь в остальное приложение. Цвета — только через наши CSS-переменные токенов,
+ * поэтому сетка автоматически реагирует на смену любой из четырёх тем.
+ * (FullCalendar v6 инжектирует свой базовый CSS сам — здесь только оверрайды.)
+ */
+
+.bms-calendar {
+  --fc-border-color: var(--border-subtle);
+  --fc-page-bg-color: var(--bg-1);
+  --fc-neutral-bg-color: var(--bg-2);
+  --fc-neutral-text-color: var(--fg-muted);
+  --fc-today-bg-color: var(--accent-muted);
+  --fc-now-indicator-color: var(--accent);
+  --fc-highlight-color: var(--accent-muted);
+  --fc-event-bg-color: var(--bg-2);
+  --fc-event-border-color: var(--border-strong);
+  --fc-event-text-color: var(--fg-primary);
+  --fc-list-event-hover-bg-color: var(--bg-2);
+  --fc-more-link-bg-color: transparent;
+  --fc-more-link-text-color: var(--fg-secondary);
+  --fc-small-font-size: 0.78em;
+  --fc-page-bg-color: var(--bg-1);
+
+  font-size: 0.875rem;
+  color: var(--fg-primary);
+}
+
+/* Внешняя рамка сетки — тонкая, вписана в карточку страницы. */
+.bms-calendar .fc-scrollgrid {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.bms-calendar .fc-scrollgrid,
+.bms-calendar .fc-scrollgrid td,
+.bms-calendar .fc-scrollgrid th {
+  border-color: var(--border-subtle);
+}
+
+/* Заголовки дней недели. */
+.bms-calendar .fc-col-header-cell {
+  background: var(--bg-2);
+}
+.bms-calendar .fc-col-header-cell-cushion {
+  padding: 8px 6px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  text-decoration: none;
+}
+
+/* Числа дней. */
+.bms-calendar .fc-daygrid-day-number {
+  padding: 6px 8px;
+  font-size: 0.75rem;
+  color: var(--fg-secondary);
+  text-decoration: none;
+}
+.bms-calendar .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+  color: var(--accent);
+  font-weight: 600;
+}
+/* Дни соседних месяцев — приглушаем. */
+.bms-calendar .fc-day-other .fc-daygrid-day-top {
+  opacity: 0.4;
+}
+
+/* События-чипы: цвета приходят per-event (inline), здесь — форма и типографика. */
+.bms-calendar .fc-event {
+  border-radius: 6px;
+  border-width: 1px;
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  cursor: pointer;
+  box-shadow: none;
+  transition: filter 0.12s ease;
+}
+.bms-calendar .fc-event:hover {
+  filter: brightness(1.04);
+}
+.bms-calendar .fc-event:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.bms-calendar .fc-daygrid-event {
+  margin-top: 2px;
+  padding: 1px 2px;
+}
+.bms-calendar .fc-daygrid-block-event .fc-event-main {
+  padding: 1px 2px;
+}
+
+/* «+N ещё». */
+.bms-calendar .fc-daygrid-more-link {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  padding: 0 4px;
+}
+.bms-calendar .fc-daygrid-more-link:hover {
+  color: var(--fg-secondary);
+  background: var(--bg-2);
+  border-radius: 4px;
+}
+
+/* Поповер «ещё событий» — как всплывашки проекта. */
+.bms-calendar .fc-popover {
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  background: var(--bg-1);
+  box-shadow: var(--shadow-md);
+}
+.bms-calendar .fc-popover-header {
+  background: var(--bg-2);
+  color: var(--fg-secondary);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+}
+
+/* timeGrid: ось времени и слоты. */
+.bms-calendar .fc-timegrid-slot-label-cushion,
+.bms-calendar .fc-timegrid-axis-cushion {
+  font-size: 0.7rem;
+  color: var(--fg-muted);
+}
+.bms-calendar .fc-timegrid-slot {
+  height: 2.5rem;
+}
+
+/* Выходные — едва заметный тёплый оттенок фона. */
+.bms-calendar .fc-day-sat,
+.bms-calendar .fc-day-sun {
+  background: color-mix(in srgb, var(--bg-2) 45%, transparent);
+}

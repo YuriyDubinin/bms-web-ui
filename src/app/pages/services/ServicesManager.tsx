@@ -7,7 +7,15 @@ import { SERVICE_STATUS_LABELS, formatDuration, formatPrice } from './model';
 import { StatusChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
-function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function RowAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -147,7 +155,9 @@ export function ServicesManager({
         searchable: false,
         sortable: true,
         cell: (s) => (
-          <span className="font-mono text-xs text-fg-primary">{formatPrice(s.price, s.currency)}</span>
+          <span className="font-mono text-xs text-fg-primary">
+            {formatPrice(s.price, s.currency)}
+          </span>
         ),
       },
       {
@@ -157,7 +167,9 @@ export function ServicesManager({
         searchable: false,
         sortable: true,
         cell: (s) => (
-          <span className="font-mono text-xs text-fg-secondary">{formatDuration(s.duration_min)}</span>
+          <span className="font-mono text-xs text-fg-secondary">
+            {formatDuration(s.duration_min)}
+          </span>
         ),
       },
       {
@@ -259,7 +271,6 @@ export function ServicesManager({
         columns={columns}
         getRowId={(s) => s.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию услуги…"

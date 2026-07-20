@@ -118,6 +118,8 @@ export type TaskFormDialogProps = {
   processes?: Process[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
   defaultProjectId?: string;
+  /** Предзаполненный срок при создании из календаря (значение для datetime-local: YYYY-MM-DDTHH:mm). */
+  defaultDueAt?: string;
   onClose: () => void;
   onSaved: () => void;
 };
@@ -138,13 +140,13 @@ type FormState = {
   attributes: string;
 };
 
-function emptyForm(projectId = ''): FormState {
+function emptyForm(projectId = '', dueLocal = ''): FormState {
   return {
     title: '',
     description: '',
     status: 'TODO',
     priority: 'MEDIUM',
-    due_at: '',
+    due_at: dueLocal,
     project_id: projectId,
     client_id: '',
     deal_id: '',
@@ -187,6 +189,7 @@ export function TaskFormDialog({
   services = [],
   processes = [],
   defaultProjectId,
+  defaultDueAt,
   onClose,
   onSaved,
 }: TaskFormDialogProps) {
@@ -204,11 +207,11 @@ export function TaskFormDialog({
   // Заполняем форму при открытии: PUT перезаписывает задачу целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(task ? formFromTask(task) : emptyForm(defaultProjectId));
+    setForm(task ? formFromTask(task) : emptyForm(defaultProjectId, defaultDueAt));
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, task, defaultProjectId]);
+  }, [open, task, defaultProjectId, defaultDueAt]);
 
   // Подгружаем этапы при выборе процесса; без процесса — этапов нет.
   useEffect(() => {

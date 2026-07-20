@@ -1,13 +1,21 @@
-import { useMemo, useState, type ReactNode } from 'react';
-import { ApiError, deleteProcess, type Process } from '@app/api';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { ApiError, deleteProcess, type Process, type Project } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { ProcessFormDialog } from './ProcessFormDialog';
-import { PROCESS_STATUS_LABELS, formatDateTime } from './model';
+import { PROCESS_STATUS_LABELS, formatDateTime, formatPeriod } from './model';
 import { StatusChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
-function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function RowAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -30,14 +38,40 @@ export type ProcessesManagerProps = {
   error: string | null;
   /** Перезагрузить процессы после создания/редактирования/удаления. */
   reload: () => void;
+  /** Проекты организации — для select в форме и резолва имени проекта в таблице. */
+  projects: Project[];
+  /** Предвыбранный проект при создании (со страницы проекта процесс создаётся в его разрезе). */
+  defaultProjectId?: string;
+  /** Показывать колонку «Проект». На странице проекта не нужна (все процессы одного проекта). */
+  showProjectColumn?: boolean;
 };
 
 /**
  * Таблица процессов с полным CRUD (создание/редактирование/удаление через модалки).
- * Данными владеет родитель (`ProcessesPage`) и передаёт их пропсами.
+ * Переиспользуется в общем разделе (`ProcessesPage`) и во вкладке «Процессы» на странице
+ * проекта. Данными владеет родитель и передаёт их пропсами.
  */
-export function ProcessesManager({ processes, isLoading, error, reload }: ProcessesManagerProps) {
+export function ProcessesManager({
+  processes,
+  isLoading,
+  error,
+  reload,
+  projects,
+  defaultProjectId,
+  showProjectColumn = true,
+}: ProcessesManagerProps) {
   const { token, logout } = useAuth();
+  const inProjectContext = !!defaultProjectId;
+
+  const projectNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of projects) map.set(p.id, p.name);
+    return map;
+  }, [projects]);
+  const projectName = useCallback(
+    (id: string | null): string => (id ? (projectNameById.get(id) ?? '') : ''),
+    [projectNameById],
+  );
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Process | null>(null);
@@ -83,8 +117,8 @@ export function ProcessesManager({ processes, isLoading, error, reload }: Proces
     }
   };
 
-  const columns = useMemo<DataTableColumn<Process>[]>(
-    () => [
+  const columns = useMemo<DataTableColumn<Process>[]>(() => {
+    const cols: DataTableColumn<Process>[] = [
       {
         key: 'name',
         header: 'Название',
@@ -108,12 +142,31 @@ export function ProcessesManager({ processes, isLoading, error, reload }: Proces
         cell: (p) => <StatusChip status={p.status} />,
       },
       {
+        key: 'period',
+        header: 'Период',
+        value: (p) => p.starts_at ?? p.ends_at ?? '',
+        searchable: false,
+        sortable: true,
+        cell: (p) =>
+          p.starts_at || p.ends_at ? (
+            <span className="font-mono text-xs text-fg-secondary">
+              {formatPeriod(p.starts_at, p.ends_at)}
+            </span>
+          ) : (
+            <span className="text-fg-muted">—</span>
+          ),
+      },
+      {
         key: 'created_at',
         header: 'Создан',
         value: (p) => p.created_at,
         searchable: false,
         sortable: true,
-        cell: (p) => <span className="font-mono text-xs text-fg-secondary">{formatDateTime(p.created_at)}</span>,
+        cell: (p) => (
+          <span className="font-mono text-xs text-fg-secondary">
+            {formatDateTime(p.created_at)}
+          </span>
+        ),
       },
       {
         key: 'actions',
@@ -131,34 +184,62 @@ export function ProcessesManager({ processes, isLoading, error, reload }: Proces
           </div>
         ),
       },
-    ],
-    [],
-  );
+    ];
 
-  const renderCard = (p: Process): ReactNode => (
-    <div className="flex h-full min-w-0 flex-col gap-3">
-      <div className="flex items-start justify-between gap-3">
-        <p className="min-w-0 truncate font-semibold text-fg-primary">{p.name}</p>
-        <StatusChip status={p.status} />
-      </div>
-      {p.description ? (
-        <p className="line-clamp-2 text-sm leading-relaxed text-fg-secondary">{p.description}</p>
-      ) : null}
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
-        <span className="min-w-0 truncate font-mono text-[11px] text-fg-muted">
-          {formatDateTime(p.created_at)}
-        </span>
-        <div className="flex shrink-0 items-center gap-1">
-          <RowAction label="Редактировать" onClick={() => openEdit(p)}>
-            <PencilIcon />
-          </RowAction>
-          <RowAction label="Удалить" onClick={() => askDelete(p)}>
-            <TrashIcon />
-          </RowAction>
+    // Колонка «Проект» нужна только в общем разделе — на странице проекта все процессы его же.
+    if (showProjectColumn) {
+      cols.splice(1, 0, {
+        key: 'project',
+        header: 'Проект',
+        value: (p) => projectName(p.project_id),
+        filter: 'select',
+        filterLabel: 'Проект',
+        cell: (p) => {
+          const name = projectName(p.project_id);
+          return name ? name : <span className="text-fg-muted">—</span>;
+        },
+      });
+    }
+
+    return cols;
+  }, [projectName, showProjectColumn]);
+
+  const renderCard = (p: Process): ReactNode => {
+    const name = projectName(p.project_id);
+    return (
+      <div className="flex h-full min-w-0 flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <p className="min-w-0 truncate font-semibold text-fg-primary">{p.name}</p>
+          <StatusChip status={p.status} />
+        </div>
+        {p.description ? (
+          <p className="line-clamp-2 text-sm leading-relaxed text-fg-secondary">{p.description}</p>
+        ) : null}
+        {showProjectColumn && name ? (
+          <p className="truncate font-mono text-xs text-fg-secondary">{name}</p>
+        ) : null}
+        {p.starts_at || p.ends_at ? (
+          <p className="truncate font-mono text-xs text-fg-secondary">
+            <span className="text-fg-muted">Период: </span>
+            {formatPeriod(p.starts_at, p.ends_at)}
+          </p>
+        ) : null}
+        <div className="mt-auto flex items-center justify-between gap-2 border-t border-border-subtle pt-3">
+          <span className="min-w-0 truncate font-mono text-[11px] text-fg-muted">
+            {formatDateTime(p.created_at)}
+          </span>
+          <div className="flex shrink-0 items-center gap-1">
+            <RowAction label="Редактировать" onClick={() => openEdit(p)}>
+              <PencilIcon />
+            </RowAction>
+            <RowAction label="Удалить" onClick={() => askDelete(p)}>
+              <TrashIcon />
+            </RowAction>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -176,20 +257,23 @@ export function ProcessesManager({ processes, isLoading, error, reload }: Proces
         columns={columns}
         getRowId={(p) => p.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию процесса…"
         toolbarActions={
           <Button size="sm" leftIcon={<PlusIcon />} onClick={openCreate}>
-            Новый процесс
+            {inProjectContext ? 'Добавить процесс' : 'Новый процесс'}
           </Button>
         }
         emptyState={
           <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-1 px-6 py-16 text-center">
-            <p className="text-sm text-fg-secondary">Пока нет ни одного процесса</p>
+            <p className="text-sm text-fg-secondary">
+              {inProjectContext
+                ? 'У этого проекта пока нет процессов'
+                : 'Пока нет ни одного процесса'}
+            </p>
             <Button leftIcon={<PlusIcon />} onClick={openCreate}>
-              Создать первый процесс
+              {inProjectContext ? 'Добавить процесс' : 'Создать первый процесс'}
             </Button>
           </div>
         }
@@ -198,6 +282,8 @@ export function ProcessesManager({ processes, isLoading, error, reload }: Proces
       <ProcessFormDialog
         open={formOpen}
         process={editing}
+        projects={projects}
+        defaultProjectId={editing ? undefined : defaultProjectId}
         onClose={() => setFormOpen(false)}
         onSaved={() => {
           setFormOpen(false);

@@ -14,7 +14,15 @@ import {
 import { StatusChip, SubjectTypeChip } from './StatusChip';
 import { PlusIcon, PencilIcon, TrashIcon } from './icons';
 
-function RowAction({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+function RowAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -129,7 +137,9 @@ export function ClientsManager({
           return (
             <div className="min-w-0">
               <div className="font-medium text-fg-primary">{clientName(c)}</div>
-              {subtitle ? <div className="truncate text-[11px] text-fg-muted">{subtitle}</div> : null}
+              {subtitle ? (
+                <div className="truncate text-[11px] text-fg-muted">{subtitle}</div>
+              ) : null}
             </div>
           );
         },
@@ -225,9 +235,7 @@ export function ClientsManager({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate font-semibold text-fg-primary">{clientName(c)}</p>
-            {subtitle ? (
-              <p className="truncate text-[11px] text-fg-muted">{subtitle}</p>
-            ) : null}
+            {subtitle ? <p className="truncate text-[11px] text-fg-muted">{subtitle}</p> : null}
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <StatusChip status={c.status} />
@@ -274,7 +282,6 @@ export function ClientsManager({
         columns={columns}
         getRowId={(c) => c.id}
         renderCard={renderCard}
-        onRowClick={openEdit}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по имени, компании, email…"
@@ -286,7 +293,9 @@ export function ClientsManager({
         emptyState={
           <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-1 px-6 py-16 text-center">
             <p className="text-sm text-fg-secondary">
-              {inProjectContext ? 'У этого проекта пока нет клиентов' : 'Пока нет ни одного клиента'}
+              {inProjectContext
+                ? 'У этого проекта пока нет клиентов'
+                : 'Пока нет ни одного клиента'}
             </p>
             <Button leftIcon={<PlusIcon />} onClick={openCreate}>
               {inProjectContext ? 'Добавить клиента' : 'Добавить первого клиента'}

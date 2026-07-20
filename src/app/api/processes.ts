@@ -6,12 +6,18 @@ export type ProcessStatus = 'ACTIVE' | 'COMPLETED' | 'FAILED';
 /** Модель процесса (ответ API). */
 export type Process = {
   id: string;
+  /** Проект-владелец процесса; null, если процесс не привязан к проекту. */
+  project_id: string | null;
   name: string;
   /** Описание; '' если не задано. */
   description: string;
   status: ProcessStatus;
   /** Момент завершения; проставляется бэкендом при COMPLETED/FAILED, иначе null. Только чтение. */
   closed_at: string | null;
+  /** Плановое начало, YYYY-MM-DD; null если не задано. Для календарной полосы. */
+  starts_at: string | null;
+  /** Плановое окончание, YYYY-MM-DD; null если не задано. Для календарной полосы. */
+  ends_at: string | null;
   attributes: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -35,22 +41,34 @@ export type ProcessSortBy = 'created_at' | 'updated_at' | 'name' | 'status';
 export type ProcessListParams = {
   page?: number;
   page_size?: number;
+  /** Только процессы этого проекта. */
+  project_id?: string;
   status?: ProcessStatus;
   /** Подстрока по названию. */
   search?: string;
+  /** Оконный фильтр календаря: процесс попадёт, если [starts_at, ends_at] пересекает [from, to]. */
+  from?: string;
+  /** Оконный фильтр календаря (верхняя граница окна; NULL-граница интервала = открытая). */
+  to?: string;
   sort_by?: ProcessSortBy;
   order?: SortOrder;
 };
 
 /**
  * Тело create/update процесса. При update действует PUT-семантика (полная замена):
- * непереданные поля сбрасываются (description → '', status → ACTIVE, attributes → {}).
- * `closed_at` — только чтение (ставится бэкендом), в теле не передаётся.
+ * непереданные поля сбрасываются (description → '', status → ACTIVE, attributes → {},
+ * project_id → null). `closed_at` — только чтение (ставится бэкендом), в теле не передаётся.
  */
 export type ProcessInput = {
   name: string;
   description?: string;
   status?: ProcessStatus;
+  /** Проект-владелец; если не прислать — процесс отвяжется от проекта (null). */
+  project_id?: string | null;
+  /** Плановое начало, YYYY-MM-DD (nullable). */
+  starts_at?: string | null;
+  /** Плановое окончание, YYYY-MM-DD (nullable). */
+  ends_at?: string | null;
   attributes?: Record<string, unknown>;
 };
 
@@ -82,8 +100,11 @@ export function listProcesses(
   const query = buildQuery({
     page: params.page,
     page_size: params.page_size,
+    project_id: params.project_id,
     status: params.status,
     search: params.search,
+    from: params.from,
+    to: params.to,
     sort_by: params.sort_by,
     order: params.order,
   });

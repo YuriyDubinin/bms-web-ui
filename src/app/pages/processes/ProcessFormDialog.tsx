@@ -6,6 +6,7 @@ import {
   type Process,
   type ProcessInput,
   type ProcessStatus,
+  type Project,
 } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, Modal, SelectSearch } from '@app/ui';
@@ -20,7 +21,7 @@ const NAME_MIN = 2;
 const NAME_MAX = 255;
 const DESCRIPTION_MAX = 5000;
 
-type FieldKey = 'name' | 'description' | 'attributes';
+type FieldKey = 'name' | 'description' | 'project_id' | 'starts_at' | 'ends_at' | 'attributes';
 type Errors = Partial<Record<FieldKey, string>>;
 
 function inputClass(hasError: boolean): string {
@@ -78,6 +79,14 @@ export type ProcessFormDialogProps = {
   open: boolean;
   /** null — режим создания; объект — режим редактирования. */
   process: Process | null;
+  /** Проекты организации — для выбора проекта-владельца процесса. */
+  projects: Project[];
+  /** Предвыбранный проект при создании (например, со страницы проекта). */
+  defaultProjectId?: string;
+  /** Предзаполненное плановое начало при создании из календаря (YYYY-MM-DD). */
+  defaultStartsAt?: string;
+  /** Предзаполненное плановое окончание (при выделении диапазона дней; YYYY-MM-DD). */
+  defaultEndsAt?: string;
   onClose: () => void;
   onSaved: () => void;
 };
@@ -86,11 +95,22 @@ type FormState = {
   name: string;
   description: string;
   status: ProcessStatus;
+  project_id: string;
+  starts_at: string;
+  ends_at: string;
   attributes: string;
 };
 
-function emptyForm(): FormState {
-  return { name: '', description: '', status: 'ACTIVE', attributes: '' };
+function emptyForm(projectId = '', startsAt = '', endsAt = ''): FormState {
+  return {
+    name: '',
+    description: '',
+    status: 'ACTIVE',
+    project_id: projectId,
+    starts_at: startsAt,
+    ends_at: endsAt,
+    attributes: '',
+  };
 }
 
 function formFromProcess(p: Process): FormState {
@@ -98,6 +118,9 @@ function formFromProcess(p: Process): FormState {
     name: p.name,
     description: p.description,
     status: p.status,
+    project_id: p.project_id ?? '',
+    starts_at: p.starts_at ?? '',
+    ends_at: p.ends_at ?? '',
     attributes:
       p.attributes && Object.keys(p.attributes).length > 0
         ? JSON.stringify(p.attributes, null, 2)
@@ -105,7 +128,16 @@ function formFromProcess(p: Process): FormState {
   };
 }
 
-export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFormDialogProps) {
+export function ProcessFormDialog({
+  open,
+  process,
+  projects,
+  defaultProjectId,
+  defaultStartsAt,
+  defaultEndsAt,
+  onClose,
+  onSaved,
+}: ProcessFormDialogProps) {
   const { token, logout } = useAuth();
   const isEdit = !!process;
 
@@ -117,11 +149,11 @@ export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFo
   // Заполняем форму при открытии: PUT перезаписывает процесс целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(process ? formFromProcess(process) : emptyForm());
+    setForm(process ? formFromProcess(process) : emptyForm(defaultProjectId, defaultStartsAt, defaultEndsAt));
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, process]);
+  }, [open, process, defaultProjectId, defaultStartsAt, defaultEndsAt]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -166,7 +198,14 @@ export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFo
       if (err.status === 422 && err.details?.length) {
         const mapped: Errors = {};
         for (const d of err.details) {
-          if (d.field === 'name' || d.field === 'description' || d.field === 'attributes') {
+          if (
+            d.field === 'name' ||
+            d.field === 'description' ||
+            d.field === 'project_id' ||
+            d.field === 'starts_at' ||
+            d.field === 'ends_at' ||
+            d.field === 'attributes'
+          ) {
             mapped[d.field] = d.message;
           }
         }
@@ -197,11 +236,16 @@ export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFo
     if (Object.keys(validationErrors).length > 0) return;
 
     // PUT = полная замена. Отправляем все поля целиком; closed_at — read-only, его не шлём.
+    // project_id при отсутствии опускаем — бэкенд трактует это как null (отвязка от проекта).
     const payload: ProcessInput = {
       name: form.name.trim(),
       description: form.description.trim(),
       status: form.status,
       attributes,
+      // Даты шлём всегда (PUT = полная замена): пустое значение → null, иначе очистка не сохранится.
+      starts_at: form.starts_at || null,
+      ends_at: form.ends_at || null,
+      ...(form.project_id ? { project_id: form.project_id } : {}),
     };
 
     setSubmitting(true);
@@ -273,19 +317,66 @@ export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFo
           />
         </Field>
 
-        <Field
-          label="Статус"
-          htmlFor="process-status"
-          hint="«Завершён» и «Провален» закрывают процесс — дата завершения проставится автоматически."
-        >
-          <SelectSearch
-            id="process-status"
-            value={form.status}
-            disabled={submitting}
-            onChange={(v) => setField('status', v as ProcessStatus)}
-            options={PROCESS_STATUSES.map((s) => ({ value: s, label: PROCESS_STATUS_LABELS[s] }))}
-          />
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Статус"
+            htmlFor="process-status"
+            hint="«Завершён» и «Провален» закрывают процесс — дата завершения проставится автоматически."
+          >
+            <SelectSearch
+              id="process-status"
+              value={form.status}
+              disabled={submitting}
+              onChange={(v) => setField('status', v as ProcessStatus)}
+              options={PROCESS_STATUSES.map((s) => ({ value: s, label: PROCESS_STATUS_LABELS[s] }))}
+            />
+          </Field>
+          <Field label="Проект" htmlFor="process-project" error={errors.project_id}>
+            <SelectSearch
+              id="process-project"
+              value={form.project_id}
+              disabled={submitting}
+              hasError={!!errors.project_id}
+              placeholder="Без проекта"
+              searchPlaceholder="Поиск проекта…"
+              onChange={(v) => setField('project_id', v)}
+              options={[
+                { value: '', label: 'Без проекта' },
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Начало (план)"
+            htmlFor="process-starts"
+            error={errors.starts_at}
+            hint="Для отображения на календаре"
+          >
+            <input
+              id="process-starts"
+              type="date"
+              value={form.starts_at}
+              max={form.ends_at || undefined}
+              disabled={submitting}
+              onChange={(e) => setField('starts_at', e.target.value)}
+              className={inputClass(!!errors.starts_at)}
+            />
+          </Field>
+          <Field label="Окончание (план)" htmlFor="process-ends" error={errors.ends_at}>
+            <input
+              id="process-ends"
+              type="date"
+              value={form.ends_at}
+              min={form.starts_at || undefined}
+              disabled={submitting}
+              onChange={(e) => setField('ends_at', e.target.value)}
+              className={inputClass(!!errors.ends_at)}
+            />
+          </Field>
+        </div>
 
         <SectionLabel>Дополнительно</SectionLabel>
         <Field

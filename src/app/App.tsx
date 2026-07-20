@@ -1,16 +1,24 @@
+import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useTheme } from '@app/theme';
 import { useAuth } from '@app/auth';
 import { AppLayout } from '@app/layout';
 import { LoginPage } from '@app/pages/LoginPage';
-import { DashboardPage } from '@app/pages/DashboardPage';
+// Дашборд тянет библиотеку графиков (recharts) — грузим его отдельным чанком по требованию,
+// чтобы не утяжелять остальные маршруты.
+const DashboardPage = lazy(() =>
+  import('@app/pages/dashboard').then((m) => ({ default: m.DashboardPage })),
+);
+// Календарь тянет FullCalendar — грузим отдельным чанком по требованию, как дашборд.
+const CalendarPage = lazy(() =>
+  import('@app/pages/calendar').then((m) => ({ default: m.CalendarPage })),
+);
 import { ProjectsPage, ProjectDetailPage } from '@app/pages/projects';
 import { ServicesPage } from '@app/pages/services';
 import { ClientsPage } from '@app/pages/clients';
 import { DealsPage } from '@app/pages/deals';
 import { TasksPage } from '@app/pages/tasks';
 import { ProcessesPage } from '@app/pages/processes';
-import { CalendarPage } from '@app/pages/CalendarPage';
 import { BotsPage } from '@app/pages/BotsPage';
 import { SettingsPage } from '@app/pages/SettingsPage';
 
@@ -48,7 +56,16 @@ export function App() {
           />
         }
       >
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Suspense
+              fallback={<div className="py-16 text-center text-sm text-fg-muted">Загрузка дашборда…</div>}
+            >
+              <DashboardPage />
+            </Suspense>
+          }
+        />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/services" element={<ServicesPage />} />
@@ -56,7 +73,16 @@ export function App() {
         <Route path="/deals" element={<DealsPage />} />
         <Route path="/tasks" element={<TasksPage />} />
         <Route path="/processes" element={<ProcessesPage />} />
-        <Route path="/calendar" element={<CalendarPage />} />
+        <Route
+          path="/calendar"
+          element={
+            <Suspense
+              fallback={<div className="py-16 text-center text-sm text-fg-muted">Загрузка календаря…</div>}
+            >
+              <CalendarPage />
+            </Suspense>
+          }
+        />
         <Route path="/bots" element={<BotsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>

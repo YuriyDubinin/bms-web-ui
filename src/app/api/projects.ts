@@ -39,6 +39,10 @@ export type ProjectListParams = {
   page_size?: number;
   status?: ProjectStatus;
   search?: string;
+  /** Оконный фильтр календаря: проект попадёт, если [starts_at, ends_at] пересекает [from, to]. */
+  from?: string;
+  /** Оконный фильтр календаря (верхняя граница окна; NULL-граница интервала = открытая). */
+  to?: string;
   sort_by?: ProjectSortBy;
   order?: SortOrder;
 };
@@ -82,6 +86,8 @@ export function listProjects(
     page_size: params.page_size,
     status: params.status,
     search: params.search,
+    from: params.from,
+    to: params.to,
     sort_by: params.sort_by,
     order: params.order,
   });
