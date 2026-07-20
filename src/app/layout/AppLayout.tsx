@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import type { SessionUser } from '@app/api';
-import type { ThemeId } from '@app/theme';
+import type { ThemePreference } from '@app/theme';
 import { Sidebar } from './Sidebar';
 import { MobileHeader } from './MobileHeader';
 import { MobileDrawer } from './MobileDrawer';
@@ -21,8 +21,8 @@ function getStoredCollapsed(): boolean {
 
 export type AppLayoutProps = {
   authenticated: boolean;
-  theme: ThemeId;
-  onThemeChange: (id: ThemeId) => void;
+  theme: ThemePreference;
+  onThemeChange: (id: ThemePreference) => void;
   user: SessionUser | null;
   onLogout: () => Promise<void>;
 };

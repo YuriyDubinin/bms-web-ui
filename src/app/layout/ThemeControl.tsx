@@ -1,28 +1,33 @@
-import { THEMES, ThemeGlyph } from '@app/theme';
-import type { ThemeId } from '@app/theme';
+import { THEME_OPTIONS, ThemeGlyph, AutoGlyph } from '@app/theme';
+import type { ThemePreference } from '@app/theme';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
 
-function labelOf(id: ThemeId): string {
-  return THEMES.find((t) => t.id === id)?.label ?? '';
+function labelOf(id: ThemePreference): string {
+  return THEME_OPTIONS.find((t) => t.id === id)?.label ?? '';
 }
 
-function nextTheme(id: ThemeId): ThemeId {
-  const idx = THEMES.findIndex((t) => t.id === id);
-  return THEMES[(idx + 1) % THEMES.length]!.id;
+function nextTheme(id: ThemePreference): ThemePreference {
+  const idx = THEME_OPTIONS.findIndex((t) => t.id === id);
+  return THEME_OPTIONS[(idx + 1) % THEME_OPTIONS.length]!.id;
+}
+
+/** Иконка пункта: у режима «Авто» — часы, у обычных тем — иконка времени суток. */
+function OptionGlyph({ id }: { id: ThemePreference }) {
+  return id === 'auto' ? <AutoGlyph /> : <ThemeGlyph theme={id} />;
 }
 
 export type ThemeControlProps = {
-  value: ThemeId;
-  onChange: (id: ThemeId) => void;
-  /** Свёрнутый режим — одна кнопка с иконкой текущей темы, клик переключает по кругу. */
+  value: ThemePreference;
+  onChange: (id: ThemePreference) => void;
+  /** Свёрнутый режим — одна кнопка с иконкой текущего выбора, клик переключает по кругу. */
   collapsed?: boolean;
 };
 
 /**
  * Представление переключателя тем для сайдбара.
- * Развёрнутый — ряд из 4 иконок (полный выбор); свёрнутый — одна циклическая кнопка.
+ * Развёрнутый — ряд из 4 тем + «Авто»; свёрнутый — одна циклическая кнопка.
  */
 export function ThemeControl({ value, onChange, collapsed = false }: ThemeControlProps) {
   if (collapsed) {
@@ -34,7 +39,7 @@ export function ThemeControl({ value, onChange, collapsed = false }: ThemeContro
         aria-label={`Тема: ${labelOf(value)}. Переключить`}
         className="mx-auto flex h-9 w-9 items-center justify-center rounded-md text-fg-secondary transition-colors hover:bg-bg-2 hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        <ThemeGlyph theme={value} />
+        <OptionGlyph id={value} />
       </button>
     );
   }
@@ -49,24 +54,25 @@ export function ThemeControl({ value, onChange, collapsed = false }: ThemeContro
         aria-label="Тема оформления"
         className="flex items-center gap-1 rounded-md border border-border-subtle bg-bg-2 p-1"
       >
-        {THEMES.map((theme) => {
-          const active = value === theme.id;
+        {THEME_OPTIONS.map((option) => {
+          const active = value === option.id;
+          const title = option.id === 'auto' ? 'Авто — тема по времени суток' : option.label;
           return (
             <button
-              key={theme.id}
+              key={option.id}
               type="button"
               role="radio"
               aria-checked={active}
-              aria-label={theme.label}
-              title={theme.label}
-              onClick={() => onChange(theme.id)}
+              aria-label={title}
+              title={title}
+              onClick={() => onChange(option.id)}
               className={cx(
                 'flex h-8 flex-1 items-center justify-center rounded transition-colors duration-150',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                 active ? 'bg-accent-muted text-accent' : 'text-fg-muted hover:text-fg-secondary',
               )}
             >
-              <ThemeGlyph theme={theme.id} />
+              <OptionGlyph id={option.id} />
             </button>
           );
         })}

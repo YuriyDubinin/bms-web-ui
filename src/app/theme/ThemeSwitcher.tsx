@@ -1,13 +1,13 @@
-import { THEMES } from './theme';
-import type { ThemeId } from './theme';
-import { ThemeGlyph } from './ThemeGlyph';
+import { THEME_OPTIONS } from './theme';
+import type { ThemePreference } from './theme';
+import { ThemeGlyph, AutoGlyph } from './ThemeGlyph';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
 
 export type ThemeSwitcherProps = {
-  value: ThemeId;
-  onChange: (id: ThemeId) => void;
+  value: ThemePreference;
+  onChange: (id: ThemePreference) => void;
   className?: string;
 };
 
@@ -25,17 +25,18 @@ export function ThemeSwitcher({ value, onChange, className }: ThemeSwitcherProps
         className,
       )}
     >
-      {THEMES.map((theme) => {
-        const active = value === theme.id;
+      {THEME_OPTIONS.map((option) => {
+        const active = value === option.id;
+        const title = option.id === 'auto' ? 'Авто — тема по времени суток' : option.label;
         return (
           <button
-            key={theme.id}
+            key={option.id}
             type="button"
             role="radio"
             aria-checked={active}
-            aria-label={theme.label}
-            title={theme.label}
-            onClick={() => onChange(theme.id)}
+            aria-label={title}
+            title={title}
+            onClick={() => onChange(option.id)}
             className={cx(
               'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium',
               'transition-colors duration-150 ease-out',
@@ -45,8 +46,8 @@ export function ThemeSwitcher({ value, onChange, className }: ThemeSwitcherProps
                 : 'text-fg-muted hover:bg-bg-2 hover:text-fg-secondary',
             )}
           >
-            <ThemeGlyph theme={theme.id} />
-            <span className="hidden sm:inline">{theme.label}</span>
+            {option.id === 'auto' ? <AutoGlyph /> : <ThemeGlyph theme={option.id} />}
+            <span className="hidden sm:inline">{option.label}</span>
           </button>
         );
       })}

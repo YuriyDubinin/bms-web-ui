@@ -1,12 +1,12 @@
 import { ThemeSwitcher } from '@app/theme';
-import type { ThemeId } from '@app/theme';
+import type { ThemePreference } from '@app/theme';
 import { BrandMark } from './BrandMark';
 import { MenuIcon } from './icons';
 
 export type MobileHeaderProps = {
   onOpenMenu: () => void;
-  theme: ThemeId;
-  onThemeChange: (id: ThemeId) => void;
+  theme: ThemePreference;
+  onThemeChange: (id: ThemePreference) => void;
 };
 
 /** Мобильный хедер (виден только < md): кнопка меню, бренд, переключатель тем. */

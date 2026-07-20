@@ -7,13 +7,24 @@
     <meta name="theme-color" content="#0A0A0B" />
     <meta name="description" content="BMS" />
     <title>BMS</title>
-    <!-- Применяем сохранённую тему до первой отрисовки — иначе мелькнёт дефолтная. -->
+    <!-- Применяем сохранённую тему до первой отрисовки — иначе мелькнёт дефолтная.
+         Режим 'auto' → тема по времени суток. Границы (5/11/17/22) держим в синхроне
+         с themeForHour() в src/app/theme/theme.ts. -->
     <script>
       (function () {
+        function themeForHour(h) {
+          if (h >= 5 && h < 11) return 'morning';
+          if (h >= 11 && h < 17) return 'day';
+          if (h >= 17 && h < 22) return 'evening';
+          return 'night';
+        }
         try {
           var t = localStorage.getItem('bms.theme');
-          var ok = ['morning', 'day', 'evening', 'night'].indexOf(t) !== -1;
-          document.documentElement.setAttribute('data-theme', ok ? t : 'night');
+          var theme;
+          if (t === 'auto') theme = themeForHour(new Date().getHours());
+          else if (['morning', 'day', 'evening', 'night'].indexOf(t) !== -1) theme = t;
+          else theme = 'night';
+          document.documentElement.setAttribute('data-theme', theme);
         } catch (e) {
           document.documentElement.setAttribute('data-theme', 'night');
         }

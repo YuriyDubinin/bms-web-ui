@@ -61,3 +61,23 @@ export function ThemeGlyph({ theme, size = 15 }: { theme: ThemeId; size?: number
     </svg>
   );
 }
+
+// Иконка режима «Авто» (lucide-стиль, часы): тема подбирается по времени суток.
+export function AutoGlyph({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
+    </svg>
+  );
+}

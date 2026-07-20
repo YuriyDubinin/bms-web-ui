@@ -1,5 +1,16 @@
 export { ThemeSwitcher } from './ThemeSwitcher';
 export type { ThemeSwitcherProps } from './ThemeSwitcher';
-export { ThemeGlyph } from './ThemeGlyph';
-export { useTheme, applyTheme, getStoredTheme, THEMES, THEME_IDS, DEFAULT_THEME } from './theme';
-export type { ThemeId } from './theme';
+export { ThemeGlyph, AutoGlyph } from './ThemeGlyph';
+export {
+  useTheme,
+  applyTheme,
+  getStoredTheme,
+  getStoredPreference,
+  resolveAutoTheme,
+  themeForHour,
+  THEMES,
+  THEME_OPTIONS,
+  THEME_IDS,
+  DEFAULT_THEME,
+} from './theme';
+export type { ThemeId, ThemePreference } from './theme';

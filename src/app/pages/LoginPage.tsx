@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '@app/api';
 import { ThemeSwitcher } from '@app/theme';
-import type { ThemeId } from '@app/theme';
+import type { ThemePreference } from '@app/theme';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
@@ -11,8 +11,8 @@ const EMAIL_MAX = 255;
 const PASSWORD_MAX = 72;
 
 export type LoginPageProps = {
-  theme: ThemeId;
-  onThemeChange: (id: ThemeId) => void;
+  theme: ThemePreference;
+  onThemeChange: (id: ThemePreference) => void;
   /** Бросает ApiError при неуспехе; резолвится — App сам переключит на главную. */
   onLogin: (email: string, password: string) => Promise<void>;
 };

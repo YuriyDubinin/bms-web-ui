@@ -1,5 +1,5 @@
 import type { SessionUser } from '@app/api';
-import type { ThemeId } from '@app/theme';
+import type { ThemePreference } from '@app/theme';
 import { BrandMark } from './BrandMark';
 import { NavList } from './NavList';
 import { SidebarUser } from './SidebarUser';
@@ -12,8 +12,8 @@ const cx = (...classes: (string | false | undefined)[]): string =>
 export type SidebarProps = {
   collapsed: boolean;
   onToggle: () => void;
-  theme: ThemeId;
-  onThemeChange: (id: ThemeId) => void;
+  theme: ThemePreference;
+  onThemeChange: (id: ThemePreference) => void;
   user: SessionUser | null;
   onLogout: () => Promise<void>;
 };
