@@ -429,7 +429,7 @@ export function ClientFormDialog({
               value={form.company_name}
               maxLength={NAME_MAX}
               disabled={submitting}
-              placeholder="ООО «Ромашка»"
+              placeholder="ООО «Технопром»"
               onChange={(e) => {
                 setField('company_name', e.target.value);
                 clearError('name');
@@ -448,7 +448,7 @@ export function ClientFormDialog({
               value={form.email}
               maxLength={EMAIL_MAX}
               disabled={submitting}
-              placeholder="ivan@romashka.ru"
+              placeholder="i.petrov@company.ru"
               onChange={(e) => {
                 setField('email', e.target.value);
                 clearError('email');
@@ -542,7 +542,7 @@ export function ClientFormDialog({
             type="text"
             value={form.address[ADDRESS_COMMENT_KEY] ?? ''}
             disabled={submitting}
-            placeholder="Например: домофон 10, вход со двора"
+            placeholder="Например: этаж 5, офис 512"
             onChange={(e) => setAddressField(ADDRESS_COMMENT_KEY, e.target.value)}
             className={inputClass(false)}
           />

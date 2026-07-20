@@ -10,6 +10,12 @@ export type Task = {
   project_id: string | null;
   client_id: string | null;
   deal_id: string | null;
+  /** Привязка к услуге; null если не задана. */
+  service_id: string | null;
+  /** Привязка к процессу; null если не задана. */
+  process_id: string | null;
+  /** Привязка к этапу процесса; допустима только вместе с process_id. */
+  process_stage_id: string | null;
   title: string;
   /** Описание; '' если не задано. */
   description: string;
@@ -42,6 +48,9 @@ export type TaskListParams = {
   project_id?: string;
   client_id?: string;
   deal_id?: string;
+  service_id?: string;
+  process_id?: string;
+  process_stage_id?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
   assigned_to?: string;
@@ -69,6 +78,12 @@ export type TaskInput = {
   project_id?: string | null;
   client_id?: string | null;
   deal_id?: string | null;
+  /** Услуга; если задана — должна принадлежать организации. */
+  service_id?: string | null;
+  /** Процесс; если задан — должен принадлежать организации. */
+  process_id?: string | null;
+  /** Этап процесса; требует process_id и должен принадлежать этому процессу. */
+  process_stage_id?: string | null;
   assigned_to?: string | null;
   due_at?: string | null;
   attributes?: Record<string, unknown>;
@@ -106,6 +121,9 @@ export function listTasks(
     project_id: params.project_id,
     client_id: params.client_id,
     deal_id: params.deal_id,
+    service_id: params.service_id,
+    process_id: params.process_id,
+    process_stage_id: params.process_stage_id,
     status: params.status,
     priority: params.priority,
     assigned_to: params.assigned_to,

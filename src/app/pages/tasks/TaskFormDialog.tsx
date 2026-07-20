@@ -3,9 +3,13 @@ import {
   ApiError,
   createTask,
   updateTask,
+  listProcessStages,
   type Client,
   type Deal,
+  type Process,
+  type ProcessStage,
   type Project,
+  type Service,
   type Task,
   type TaskInput,
   type TaskPriority,
@@ -40,6 +44,9 @@ type FieldKey =
   | 'project_id'
   | 'client_id'
   | 'deal_id'
+  | 'service_id'
+  | 'process_id'
+  | 'process_stage_id'
   | 'assigned_to'
   | 'attributes';
 type Errors = Partial<Record<FieldKey, string>>;
@@ -105,6 +112,10 @@ export type TaskFormDialogProps = {
   deals: Deal[];
   /** Операторы организации — для выбора исполнителя. */
   users: User[];
+  /** Услуги организации — для привязки задачи к услуге. */
+  services?: Service[];
+  /** Процессы организации — для привязки задачи к процессу (этапы грузятся по выбору). */
+  processes?: Process[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
   defaultProjectId?: string;
   onClose: () => void;
@@ -120,6 +131,9 @@ type FormState = {
   project_id: string;
   client_id: string;
   deal_id: string;
+  service_id: string;
+  process_id: string;
+  process_stage_id: string;
   assigned_to: string;
   attributes: string;
 };
@@ -134,6 +148,9 @@ function emptyForm(projectId = ''): FormState {
     project_id: projectId,
     client_id: '',
     deal_id: '',
+    service_id: '',
+    process_id: '',
+    process_stage_id: '',
     assigned_to: '',
     attributes: '',
   };
@@ -149,6 +166,9 @@ function formFromTask(t: Task): FormState {
     project_id: t.project_id ?? '',
     client_id: t.client_id ?? '',
     deal_id: t.deal_id ?? '',
+    service_id: t.service_id ?? '',
+    process_id: t.process_id ?? '',
+    process_stage_id: t.process_stage_id ?? '',
     assigned_to: t.assigned_to ?? '',
     attributes:
       t.attributes && Object.keys(t.attributes).length > 0
@@ -164,6 +184,8 @@ export function TaskFormDialog({
   clients,
   deals,
   users,
+  services = [],
+  processes = [],
   defaultProjectId,
   onClose,
   onSaved,
@@ -175,6 +197,9 @@ export function TaskFormDialog({
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  // Этапы выбранного процесса — грузятся по требованию для селекта «Этап».
+  const [stages, setStages] = useState<ProcessStage[]>([]);
+  const [stagesLoading, setStagesLoading] = useState(false);
 
   // Заполняем форму при открытии: PUT перезаписывает задачу целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
@@ -185,9 +210,38 @@ export function TaskFormDialog({
     setSubmitting(false);
   }, [open, task, defaultProjectId]);
 
+  // Подгружаем этапы при выборе процесса; без процесса — этапов нет.
+  useEffect(() => {
+    if (!open) return;
+    const pid = form.process_id;
+    if (!pid || !token) {
+      setStages([]);
+      return;
+    }
+    const controller = new AbortController();
+    setStagesLoading(true);
+    listProcessStages(token, pid, controller.signal)
+      .then((items) => {
+        if (!controller.signal.aborted) setStages(items);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setStages([]);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setStagesLoading(false);
+      });
+    return () => controller.abort();
+  }, [open, form.process_id, token]);
+
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (key in errors) setErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
+  // Смена процесса сбрасывает выбранный этап — он принадлежал прежнему процессу.
+  const onProcessChange = (v: string) => {
+    setForm((prev) => ({ ...prev, process_id: v, process_stage_id: '' }));
+    setErrors((prev) => ({ ...prev, process_id: undefined, process_stage_id: undefined }));
   };
 
   const validate = (): { errors: Errors; attributes: Record<string, unknown> } => {
@@ -234,6 +288,9 @@ export function TaskFormDialog({
             d.field === 'project_id' ||
             d.field === 'client_id' ||
             d.field === 'deal_id' ||
+            d.field === 'service_id' ||
+            d.field === 'process_id' ||
+            d.field === 'process_stage_id' ||
             d.field === 'assigned_to' ||
             d.field === 'attributes'
           ) {
@@ -279,6 +336,12 @@ export function TaskFormDialog({
       ...(form.project_id ? { project_id: form.project_id } : {}),
       ...(form.client_id ? { client_id: form.client_id } : {}),
       ...(form.deal_id ? { deal_id: form.deal_id } : {}),
+      ...(form.service_id ? { service_id: form.service_id } : {}),
+      ...(form.process_id ? { process_id: form.process_id } : {}),
+      // Этап отправляем только вместе с процессом (требование бэкенда).
+      ...(form.process_id && form.process_stage_id
+        ? { process_stage_id: form.process_stage_id }
+        : {}),
       ...(form.assigned_to ? { assigned_to: form.assigned_to } : {}),
       ...(dueIso ? { due_at: dueIso } : {}),
     };
@@ -451,6 +514,67 @@ export function TaskFormDialog({
               ]}
             />
           </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="Услуга" htmlFor="task-service" error={errors.service_id}>
+            <SelectSearch
+              id="task-service"
+              value={form.service_id}
+              disabled={submitting}
+              hasError={!!errors.service_id}
+              placeholder="Без услуги"
+              searchPlaceholder="Поиск услуги…"
+              onChange={(v) => setField('service_id', v)}
+              options={[
+                { value: '', label: 'Без услуги' },
+                ...services.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            />
+          </Field>
+          <Field label="Процесс" htmlFor="task-process" error={errors.process_id}>
+            <SelectSearch
+              id="task-process"
+              value={form.process_id}
+              disabled={submitting}
+              hasError={!!errors.process_id}
+              placeholder="Без процесса"
+              searchPlaceholder="Поиск процесса…"
+              onChange={onProcessChange}
+              options={[
+                { value: '', label: 'Без процесса' },
+                ...processes.map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
+          </Field>
+          {form.process_id ? (
+            <Field
+              label="Этап процесса"
+              htmlFor="task-process-stage"
+              error={errors.process_stage_id}
+              hint={
+                stagesLoading
+                  ? 'Загрузка этапов…'
+                  : stages.length === 0
+                    ? 'У процесса пока нет этапов'
+                    : undefined
+              }
+            >
+              <SelectSearch
+                id="task-process-stage"
+                value={form.process_stage_id}
+                disabled={submitting || stagesLoading}
+                hasError={!!errors.process_stage_id}
+                placeholder="Без этапа"
+                searchPlaceholder="Поиск этапа…"
+                onChange={(v) => setField('process_stage_id', v)}
+                options={[
+                  { value: '', label: 'Без этапа' },
+                  ...stages.map((s) => ({ value: s.id, label: s.name })),
+                ]}
+              />
+            </Field>
+          ) : null}
         </div>
 
         <SectionLabel>Дополнительно</SectionLabel>

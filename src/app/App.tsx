@@ -9,7 +9,7 @@ import { ServicesPage } from '@app/pages/services';
 import { ClientsPage } from '@app/pages/clients';
 import { DealsPage } from '@app/pages/deals';
 import { TasksPage } from '@app/pages/tasks';
-import { ProcessesPage } from '@app/pages/ProcessesPage';
+import { ProcessesPage } from '@app/pages/processes';
 import { CalendarPage } from '@app/pages/CalendarPage';
 import { BotsPage } from '@app/pages/BotsPage';
 import { SettingsPage } from '@app/pages/SettingsPage';

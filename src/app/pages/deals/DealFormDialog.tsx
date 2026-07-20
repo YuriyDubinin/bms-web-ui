@@ -378,7 +378,7 @@ export function DealFormDialog({
             value={form.title}
             maxLength={TITLE_MAX}
             disabled={submitting}
-            placeholder="Например: Поставка оборудования — ООО «Ромашка»"
+            placeholder="Например: Поставка оборудования по годовому контракту"
             onChange={(e) => setField('title', e.target.value)}
             className={inputClass(!!errors.title)}
           />

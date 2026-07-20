@@ -5,6 +5,8 @@ import { useUsers } from './useUsers';
 import { useProjects } from '../projects/useProjects';
 import { useClients } from '../clients/useClients';
 import { useDeals } from '../deals/useDeals';
+import { useServices } from '../services/useServices';
+import { useProcesses } from '../processes/useProcesses';
 
 export function TasksPage() {
   const { tasks, isLoading, error, reload } = useTasks();
@@ -13,6 +15,8 @@ export function TasksPage() {
   const { clients } = useClients();
   const { deals } = useDeals();
   const { users } = useUsers();
+  const { services } = useServices();
+  const { processes } = useProcesses();
 
   return (
     <>
@@ -27,6 +31,8 @@ export function TasksPage() {
         clients={clients}
         deals={deals}
         users={users}
+        services={services}
+        processes={processes}
       />
     </>
   );

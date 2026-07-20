@@ -333,6 +333,7 @@ export function ProjectDetailPage() {
             clients={clients}
             deals={deals}
             users={users}
+            services={services}
             defaultProjectId={project.id}
             showProjectColumn={false}
           />

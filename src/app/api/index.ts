@@ -60,4 +60,21 @@ export type {
   UpdateDealInput,
   DeleteDealResponse,
 } from './deals';
+export {
+  listProcesses,
+  createProcess,
+  updateProcess,
+  deleteProcess,
+  listProcessStages,
+} from './processes';
+export type {
+  Process,
+  ProcessStage,
+  ProcessStatus,
+  ProcessSortBy,
+  ProcessListParams,
+  ProcessInput,
+  UpdateProcessInput,
+  DeleteProcessResponse,
+} from './processes';
 export { API_BASE_URL } from './config';

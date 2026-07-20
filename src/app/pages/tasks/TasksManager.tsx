@@ -1,5 +1,15 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { ApiError, deleteTask, type Client, type Deal, type Project, type Task, type User } from '@app/api';
+import {
+  ApiError,
+  deleteTask,
+  type Client,
+  type Deal,
+  type Process,
+  type Project,
+  type Service,
+  type Task,
+  type User,
+} from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog, DataTable, type DataTableColumn } from '@app/ui';
 import { TaskFormDialog } from './TaskFormDialog';
@@ -44,6 +54,10 @@ export type TasksManagerProps = {
   deals: Deal[];
   /** Операторы организации — для выбора/резолва исполнителя. */
   users: User[];
+  /** Услуги организации — для привязки задачи к услуге (передаётся в форму). */
+  services?: Service[];
+  /** Процессы организации — для привязки задачи к процессу (передаётся в форму). */
+  processes?: Process[];
   /** Предвыбранный проект при создании (со страницы проекта задача создаётся в его разрезе). */
   defaultProjectId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все задачи одного проекта). */
@@ -64,6 +78,8 @@ export function TasksManager({
   clients,
   deals,
   users,
+  services = [],
+  processes = [],
   defaultProjectId,
   showProjectColumn = true,
 }: TasksManagerProps) {
@@ -337,6 +353,8 @@ export function TasksManager({
         clients={clients}
         deals={deals}
         users={users}
+        services={services}
+        processes={processes}
         defaultProjectId={editing ? undefined : defaultProjectId}
         onClose={() => setFormOpen(false)}
         onSaved={() => {

@@ -1,33 +1,30 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import {
   ApiError,
-  createProject,
-  updateProject,
-  type Project,
-  type ProjectInput,
-  type ProjectStatus,
+  createProcess,
+  updateProcess,
+  type Process,
+  type ProcessInput,
+  type ProcessStatus,
 } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, Modal, SelectSearch } from '@app/ui';
-import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from './model';
+import { PROCESS_STATUSES, PROCESS_STATUS_LABELS, formatDateTime } from './model';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
 
-const FORM_ID = 'project-form';
+const FORM_ID = 'process-form';
 
 const NAME_MIN = 2;
 const NAME_MAX = 255;
-const SLUG_MAX = 100;
-const DIRECTION_MAX = 255;
 const DESCRIPTION_MAX = 5000;
 
-type FieldKey = 'name' | 'slug' | 'direction' | 'description' | 'attributes' | 'starts_at' | 'ends_at';
+type FieldKey = 'name' | 'description' | 'attributes';
 type Errors = Partial<Record<FieldKey, string>>;
 
 function inputClass(hasError: boolean): string {
   return cx(
-    // min-w-0 обязателен: иначе нативный date-инпут на мобильных не сжимается и вылезает из формы.
     'w-full min-w-0 rounded-md border bg-bg-1 px-3 py-2 text-sm text-fg-primary placeholder:text-fg-muted',
     'transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-50',
     hasError
@@ -69,47 +66,38 @@ function Field({
   );
 }
 
-export type ProjectFormDialogProps = {
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="border-t border-border-subtle pt-4 font-mono text-[10px] uppercase tracking-wider text-fg-muted">
+      {children}
+    </p>
+  );
+}
+
+export type ProcessFormDialogProps = {
   open: boolean;
   /** null — режим создания; объект — режим редактирования. */
-  project: Project | null;
+  process: Process | null;
   onClose: () => void;
   onSaved: () => void;
 };
 
 type FormState = {
   name: string;
-  slug: string;
-  direction: string;
   description: string;
-  status: ProjectStatus;
-  starts_at: string;
-  ends_at: string;
+  status: ProcessStatus;
   attributes: string;
 };
 
 function emptyForm(): FormState {
-  return {
-    name: '',
-    slug: '',
-    direction: '',
-    description: '',
-    status: 'ACTIVE',
-    starts_at: '',
-    ends_at: '',
-    attributes: '',
-  };
+  return { name: '', description: '', status: 'ACTIVE', attributes: '' };
 }
 
-function formFromProject(p: Project): FormState {
+function formFromProcess(p: Process): FormState {
   return {
     name: p.name,
-    slug: p.slug,
-    direction: p.direction,
     description: p.description,
     status: p.status,
-    starts_at: p.starts_at ?? '',
-    ends_at: p.ends_at ?? '',
     attributes:
       p.attributes && Object.keys(p.attributes).length > 0
         ? JSON.stringify(p.attributes, null, 2)
@@ -117,23 +105,23 @@ function formFromProject(p: Project): FormState {
   };
 }
 
-export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFormDialogProps) {
+export function ProcessFormDialog({ open, process, onClose, onSaved }: ProcessFormDialogProps) {
   const { token, logout } = useAuth();
-  const isEdit = !!project;
+  const isEdit = !!process;
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Заполняем форму при открытии: PUT перезаписывает проект целиком, поэтому подставляем ВСЕ поля.
+  // Заполняем форму при открытии: PUT перезаписывает процесс целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(project ? formFromProject(project) : emptyForm());
+    setForm(process ? formFromProcess(process) : emptyForm());
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, project]);
+  }, [open, process]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -144,10 +132,8 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
     const next: Errors = {};
     const name = form.name.trim();
     if (name.length < NAME_MIN) next.name = 'Минимум 2 символа';
-    else if (name.length > NAME_MAX) next.name = 'Слишком длинное название';
-    if (form.slug.trim().length > SLUG_MAX) next.slug = 'Максимум 100 символов';
-    if (form.direction.trim().length > DIRECTION_MAX) next.direction = 'Максимум 255 символов';
-    if (form.description.trim().length > DESCRIPTION_MAX) next.description = 'Максимум 5000 символов';
+    else if (name.length > NAME_MAX) next.name = 'Максимум 255 символов';
+    if (form.description.trim().length > DESCRIPTION_MAX) next.description = 'Слишком длинное описание';
 
     let attributes: Record<string, unknown> = {};
     const rawAttrs = form.attributes.trim();
@@ -155,7 +141,7 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
       try {
         const parsed: unknown = JSON.parse(rawAttrs);
         if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-          next.attributes = 'Должен быть JSON-объект, например {"chairs": 6}';
+          next.attributes = 'Должен быть JSON-объект, например {"owner": "Иванов"}';
         } else {
           attributes = parsed as Record<string, unknown>;
         }
@@ -173,22 +159,14 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
         void logout();
         return;
       }
-      if (err.status === 409 || err.code === 'PROJECT_EXISTS') {
-        setErrors((prev) => ({ ...prev, slug: 'Такой slug уже занят в организации' }));
+      if (err.status === 404 || err.code === 'PROCESS_NOT_FOUND') {
+        setFormError('Процесс не найден — возможно, он был удалён. Обновите список.');
         return;
       }
       if (err.status === 422 && err.details?.length) {
         const mapped: Errors = {};
         for (const d of err.details) {
-          if (
-            d.field === 'name' ||
-            d.field === 'slug' ||
-            d.field === 'direction' ||
-            d.field === 'description' ||
-            d.field === 'attributes' ||
-            d.field === 'starts_at' ||
-            d.field === 'ends_at'
-          ) {
+          if (d.field === 'name' || d.field === 'description' || d.field === 'attributes') {
             mapped[d.field] = d.message;
           }
         }
@@ -218,24 +196,20 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
     setFormError(null);
     if (Object.keys(validationErrors).length > 0) return;
 
-    // Отправляем ВСЕ поля (PUT = полная замена; для create поведение идентичное).
-    const payload: ProjectInput = {
+    // PUT = полная замена. Отправляем все поля целиком; closed_at — read-only, его не шлём.
+    const payload: ProcessInput = {
       name: form.name.trim(),
-      slug: form.slug.trim(),
-      direction: form.direction.trim(),
       description: form.description.trim(),
       status: form.status,
       attributes,
-      starts_at: form.starts_at || null,
-      ends_at: form.ends_at || null,
     };
 
     setSubmitting(true);
     try {
-      if (isEdit && project) {
-        await updateProject(token, { ...payload, id: project.id });
+      if (isEdit && process) {
+        await updateProcess(token, { ...payload, id: process.id });
       } else {
-        await createProject(token, payload);
+        await createProcess(token, payload);
       }
       onSaved();
     } catch (err) {
@@ -250,8 +224,8 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
       open={open}
       onClose={onClose}
       size="lg"
-      title={isEdit ? 'Редактировать проект' : 'Новый проект'}
-      description={isEdit ? project?.name : 'Заполните данные проекта'}
+      title={isEdit ? 'Редактировать процесс' : 'Новый процесс'}
+      description={isEdit ? process?.name : 'Заполните данные процесса'}
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={submitting}>
@@ -273,107 +247,55 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
           </div>
         ) : null}
 
-        <Field label="Название" htmlFor="project-name" required error={errors.name}>
+        <Field label="Название" htmlFor="process-name" required error={errors.name}>
           <input
-            id="project-name"
+            id="process-name"
             type="text"
             value={form.name}
             maxLength={NAME_MAX}
             disabled={submitting}
-            placeholder="Например: Корпоративные продажи"
+            placeholder="Например: Оформление сделки под ключ"
             onChange={(e) => setField('name', e.target.value)}
             className={inputClass(!!errors.name)}
           />
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            label="Slug"
-            htmlFor="project-slug"
-            error={errors.slug}
-            hint="ЧПУ-идентификатор, уникален. Можно оставить пустым."
-          >
-            <input
-              id="project-slug"
-              type="text"
-              value={form.slug}
-              maxLength={SLUG_MAX}
-              disabled={submitting}
-              placeholder="corporate-sales"
-              onChange={(e) => setField('slug', e.target.value)}
-              className={inputClass(!!errors.slug)}
-            />
-          </Field>
-
-          <Field label="Направление" htmlFor="project-direction" error={errors.direction}>
-            <input
-              id="project-direction"
-              type="text"
-              value={form.direction}
-              maxLength={DIRECTION_MAX}
-              disabled={submitting}
-              placeholder="продажи"
-              onChange={(e) => setField('direction', e.target.value)}
-              className={inputClass(!!errors.direction)}
-            />
-          </Field>
-        </div>
-
-        <Field label="Описание" htmlFor="project-description" error={errors.description}>
+        <Field label="Описание" htmlFor="process-description" error={errors.description}>
           <textarea
-            id="project-description"
+            id="process-description"
             rows={3}
             value={form.description}
             maxLength={DESCRIPTION_MAX}
             disabled={submitting}
-            placeholder="Краткое описание проекта"
+            placeholder="Краткое описание процесса"
             onChange={(e) => setField('description', e.target.value)}
             className={cx(inputClass(!!errors.description), 'resize-y')}
           />
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Статус" htmlFor="project-status">
-            <SelectSearch
-              id="project-status"
-              value={form.status}
-              disabled={submitting}
-              onChange={(v) => setField('status', v as ProjectStatus)}
-              options={PROJECT_STATUSES.map((s) => ({ value: s, label: PROJECT_STATUS_LABELS[s] }))}
-            />
-          </Field>
+        <Field
+          label="Статус"
+          htmlFor="process-status"
+          hint="«Завершён» и «Провален» закрывают процесс — дата завершения проставится автоматически."
+        >
+          <SelectSearch
+            id="process-status"
+            value={form.status}
+            disabled={submitting}
+            onChange={(v) => setField('status', v as ProcessStatus)}
+            options={PROCESS_STATUSES.map((s) => ({ value: s, label: PROCESS_STATUS_LABELS[s] }))}
+          />
+        </Field>
 
-          <Field label="Дата начала" htmlFor="project-starts" error={errors.starts_at}>
-            <input
-              id="project-starts"
-              type="date"
-              value={form.starts_at}
-              disabled={submitting}
-              onChange={(e) => setField('starts_at', e.target.value)}
-              className={inputClass(!!errors.starts_at)}
-            />
-          </Field>
-
-          <Field label="Дата окончания" htmlFor="project-ends" error={errors.ends_at}>
-            <input
-              id="project-ends"
-              type="date"
-              value={form.ends_at}
-              disabled={submitting}
-              onChange={(e) => setField('ends_at', e.target.value)}
-              className={inputClass(!!errors.ends_at)}
-            />
-          </Field>
-        </div>
-
+        <SectionLabel>Дополнительно</SectionLabel>
         <Field
           label="Доп. атрибуты (JSON)"
-          htmlFor="project-attributes"
+          htmlFor="process-attributes"
           error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"fleet_size": 12}'
+          hint='Произвольный JSON-объект, например {"owner": "Иванов"}'
         >
           <textarea
-            id="project-attributes"
+            id="process-attributes"
             rows={3}
             value={form.attributes}
             disabled={submitting}
@@ -383,6 +305,26 @@ export function ProjectFormDialog({ open, project, onClose, onSaved }: ProjectFo
             className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
           />
         </Field>
+
+        {isEdit && process ? (
+          <>
+            <SectionLabel>Служебное</SectionLabel>
+            <dl className="grid grid-cols-1 gap-3 rounded-md bg-bg-2/40 p-3 text-xs sm:grid-cols-3">
+              <div className="min-w-0">
+                <dt className="text-fg-muted">Создан</dt>
+                <dd className="mt-0.5 text-fg-secondary">{formatDateTime(process.created_at)}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-fg-muted">Обновлён</dt>
+                <dd className="mt-0.5 text-fg-secondary">{formatDateTime(process.updated_at)}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-fg-muted">Завершён</dt>
+                <dd className="mt-0.5 text-fg-secondary">{formatDateTime(process.closed_at)}</dd>
+              </div>
+            </dl>
+          </>
+        ) : null}
       </form>
     </Modal>
   );

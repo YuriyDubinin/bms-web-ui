@@ -330,7 +330,7 @@ export function ServiceFormDialog({
             value={form.name}
             maxLength={NAME_MAX}
             disabled={submitting}
-            placeholder="Например: Сеанс массажа"
+            placeholder="Например: Бухгалтерское обслуживание"
             onChange={(e) => setField('name', e.target.value)}
             className={inputClass(!!errors.name)}
           />
@@ -370,7 +370,7 @@ export function ServiceFormDialog({
               value={form.category}
               maxLength={CATEGORY_MAX}
               disabled={submitting}
-              placeholder="Например: spa"
+              placeholder="Например: Бухгалтерия"
               onChange={(e) => setField('category', e.target.value)}
               className={inputClass(!!errors.category)}
             />
