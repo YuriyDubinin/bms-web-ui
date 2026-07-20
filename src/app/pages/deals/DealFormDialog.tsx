@@ -156,7 +156,8 @@ function formFromDeal(d: Deal): FormState {
     status: d.status,
     type: d.type,
     amount: d.amount !== null && d.amount !== undefined ? String(d.amount) : '',
-    currency: d.currency || DEFAULT_CURRENCY,
+    // Всегда рубль: валюта в продукте одна, старые записи с иной валютой нормализуем к RUB.
+    currency: DEFAULT_CURRENCY,
     probability: d.probability !== null && d.probability !== undefined ? String(d.probability) : '',
     expected_close_at: d.expected_close_at ?? '',
     project_id: d.project_id ?? '',

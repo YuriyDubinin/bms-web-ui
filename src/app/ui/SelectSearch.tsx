@@ -15,7 +15,7 @@ export type SelectSearchProps = {
   placeholder?: string;
   disabled?: boolean;
   hasError?: boolean;
-  /** Показывать ли поле поиска. По умолчанию — автоматически при длинном списке (>6 опций). */
+  /** Показывать ли поле поиска. По умолчанию — во всех списках, где больше одного варианта. */
   searchable?: boolean;
   searchPlaceholder?: string;
   /** Доступное имя, если рядом нет <label>. */
@@ -60,8 +60,8 @@ function CheckIcon() {
 
 /**
  * Выпадающий список с поиском — замена нативному <select> для форм и фильтров.
- * При длинном списке (или явном `searchable`) сверху показывается поле поиска, которое
- * фильтрует опции по подстроке. Поддерживает клавиатуру (стрелки/Enter/Escape), закрытие
+ * Если вариантов больше одного (или задан явный `searchable`), сверху показывается поле
+ * поиска, которое фильтрует опции по подстроке. Поддерживает клавиатуру (стрелки/Enter/Escape), закрытие
  * по клику вне и ARIA (combobox + listbox). Значением владеет родитель (controlled).
  */
 export function SelectSearch({
@@ -86,7 +86,7 @@ export function SelectSearch({
   const searchRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const showSearch = searchable ?? options.length > 6;
+  const showSearch = searchable ?? options.length > 1;
   const selected = options.find((o) => o.value === value);
   const q = query.trim().toLowerCase();
   const filtered = q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;

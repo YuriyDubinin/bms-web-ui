@@ -127,7 +127,8 @@ function formFromService(s: Service): FormState {
     category: s.category,
     description: s.description,
     price: s.price !== null && s.price !== undefined ? String(s.price) : '',
-    currency: s.currency || DEFAULT_CURRENCY,
+    // Всегда рубль: валюта в продукте одна, старые записи с иной валютой нормализуем к RUB.
+    currency: DEFAULT_CURRENCY,
     duration_min: s.duration_min !== null && s.duration_min !== undefined ? String(s.duration_min) : '',
     status: s.status,
     attributes:

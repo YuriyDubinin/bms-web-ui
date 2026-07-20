@@ -18,23 +18,15 @@ export const SERVICE_STATUS_TONE: Record<ServiceStatus, string> = {
 /**
  * Справочник валют для select. Код — ISO-4217 (3 буквы, верхний регистр),
  * как требует бэкенд; symbol — для компактного отображения цены в списке.
+ * По требованию продукта используется единственная валюта — российский рубль.
  */
 export type CurrencyOption = { code: string; symbol: string; label: string };
 
 export const CURRENCIES: CurrencyOption[] = [
   { code: 'RUB', symbol: '₽', label: 'Российский рубль' },
-  { code: 'USD', symbol: '$', label: 'Доллар США' },
-  { code: 'EUR', symbol: '€', label: 'Евро' },
-  { code: 'GBP', symbol: '£', label: 'Фунт стерлингов' },
-  { code: 'KZT', symbol: '₸', label: 'Казахстанский тенге' },
-  { code: 'UAH', symbol: '₴', label: 'Украинская гривна' },
-  { code: 'BYN', symbol: 'Br', label: 'Белорусский рубль' },
-  { code: 'CNY', symbol: '¥', label: 'Китайский юань' },
-  { code: 'TRY', symbol: '₺', label: 'Турецкая лира' },
-  { code: 'AED', symbol: 'د.إ', label: 'Дирхам ОАЭ' },
 ];
 
-export const DEFAULT_CURRENCY = 'USD';
+export const DEFAULT_CURRENCY = 'RUB';
 
 /**
  * Цена + валюта в читаемом виде. Intl корректно локализует известные ISO-коды
@@ -42,7 +34,9 @@ export const DEFAULT_CURRENCY = 'USD';
  */
 export function formatPrice(price: number | null, currency: string): string {
   if (price === null || price === undefined) return '—';
-  const code = (currency || DEFAULT_CURRENCY).toUpperCase();
+  const raw = (currency || DEFAULT_CURRENCY).toUpperCase();
+  // В продукте одна валюта: незнакомые/старые коды (например USD у прежних записей) показываем как рубль.
+  const code = CURRENCIES.some((c) => c.code === raw) ? raw : DEFAULT_CURRENCY;
   try {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
