@@ -5,6 +5,7 @@ import { useProjects } from '../projects/useProjects';
 import { useClients } from '../clients/useClients';
 import { useServices } from '../services/useServices';
 import { useUsers } from '../tasks/useUsers';
+import { useProcesses } from '../processes/useProcesses';
 
 export function DealsPage() {
   const { deals, isLoading, error, reload } = useDeals();
@@ -13,6 +14,7 @@ export function DealsPage() {
   const { clients } = useClients();
   const { services } = useServices();
   const { users } = useUsers();
+  const { processes } = useProcesses();
 
   return (
     <>
@@ -26,6 +28,7 @@ export function DealsPage() {
         projects={projects}
         clients={clients}
         services={services}
+        processes={processes}
         users={users}
       />
     </>

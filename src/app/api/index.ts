@@ -25,7 +25,15 @@ export type {
   UpdateServiceInput,
   DeleteServiceResponse,
 } from './services';
-export { listClients, createClient, updateClient, deleteClient } from './clients';
+export {
+  listClients,
+  createClient,
+  updateClient,
+  deleteClient,
+  listClientProjects,
+  attachClientProject,
+  detachClientProject,
+} from './clients';
 export type {
   Client,
   ClientStatus,
@@ -35,6 +43,7 @@ export type {
   ClientInput,
   UpdateClientInput,
   DeleteClientResponse,
+  ClientProjectLinkResponse,
 } from './clients';
 export { listTasks, createTask, updateTask, deleteTask } from './tasks';
 export type {

@@ -345,6 +345,7 @@ export function ProjectDetailPage() {
             projects={projects}
             clients={clients}
             services={services}
+            processes={processes}
             users={users}
             defaultProjectId={project.id}
             showProjectColumn={false}

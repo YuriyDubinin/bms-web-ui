@@ -8,6 +8,7 @@ import {
   type DealInput,
   type DealStatus,
   type DealType,
+  type Process,
   type Project,
   type Service,
   type User,
@@ -44,6 +45,7 @@ type FieldKey =
   | 'project_id'
   | 'client_id'
   | 'service_id'
+  | 'process_id'
   | 'assigned_to'
   | 'attributes';
 type Errors = Partial<Record<FieldKey, string>>;
@@ -107,6 +109,8 @@ export type DealFormDialogProps = {
   clients: Client[];
   /** Услуги организации — для привязки «основной» услуги сделки. */
   services: Service[];
+  /** Процессы организации — для привязки сделки к процессу. */
+  processes: Process[];
   /** Операторы организации — для выбора ответственного. */
   users: User[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
@@ -129,6 +133,7 @@ type FormState = {
   project_id: string;
   client_id: string;
   service_id: string;
+  process_id: string;
   assigned_to: string;
   attributes: string;
 };
@@ -146,6 +151,7 @@ function emptyForm(projectId = '', closeDate = ''): FormState {
     project_id: projectId,
     client_id: '',
     service_id: '',
+    process_id: '',
     assigned_to: '',
     attributes: '',
   };
@@ -165,6 +171,7 @@ function formFromDeal(d: Deal): FormState {
     project_id: d.project_id ?? '',
     client_id: d.client_id ?? '',
     service_id: d.service_id ?? '',
+    process_id: d.process_id ?? '',
     assigned_to: d.assigned_to ?? '',
     attributes:
       d.attributes && Object.keys(d.attributes).length > 0
@@ -179,6 +186,7 @@ export function DealFormDialog({
   projects,
   clients,
   services,
+  processes,
   users,
   defaultProjectId,
   defaultCloseAt,
@@ -277,6 +285,8 @@ export function DealFormDialog({
             d.field === 'expected_close_at' ||
             d.field === 'project_id' ||
             d.field === 'client_id' ||
+            d.field === 'service_id' ||
+            d.field === 'process_id' ||
             d.field === 'assigned_to' ||
             d.field === 'attributes'
           ) {
@@ -324,6 +334,7 @@ export function DealFormDialog({
       ...(form.project_id ? { project_id: form.project_id } : {}),
       ...(form.client_id ? { client_id: form.client_id } : {}),
       ...(form.service_id ? { service_id: form.service_id } : {}),
+      ...(form.process_id ? { process_id: form.process_id } : {}),
       ...(form.assigned_to ? { assigned_to: form.assigned_to } : {}),
     };
 
@@ -539,6 +550,27 @@ export function DealFormDialog({
             />
           </Field>
         </div>
+
+        <Field
+          label="Процесс"
+          htmlFor="deal-process"
+          error={errors.process_id}
+          hint="В рамках какого процесса выполняется сделка"
+        >
+          <SelectSearch
+            id="deal-process"
+            value={form.process_id}
+            disabled={submitting}
+            hasError={!!errors.process_id}
+            placeholder="Без процесса"
+            searchPlaceholder="Поиск процесса…"
+            onChange={(v) => setField('process_id', v)}
+            options={[
+              { value: '', label: 'Без процесса' },
+              ...processes.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
+        </Field>
 
         <SectionLabel>Дополнительно</SectionLabel>
         <Field

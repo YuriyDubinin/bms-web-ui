@@ -13,6 +13,8 @@ export type Deal = {
   client_id: string | null;
   /** «Основная» услуга сделки (одна на сделку); null если не задана. */
   service_id: string | null;
+  /** Процесс, в рамках которого выполняется сделка; null если не задан. */
+  process_id: string | null;
   title: string;
   /** Описание; '' если не задано. */
   description: string;
@@ -85,6 +87,7 @@ export type DealInput = {
   project_id?: string | null;
   client_id?: string | null;
   service_id?: string | null;
+  process_id?: string | null;
   assigned_to?: string | null;
   attributes?: Record<string, unknown>;
 };

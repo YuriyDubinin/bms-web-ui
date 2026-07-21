@@ -375,6 +375,7 @@ export function CalendarPage() {
         projects={refs.projects}
         clients={refs.clients}
         services={refs.services}
+        processes={refs.processes}
         users={refs.users}
         defaultCloseAt={dealForm.close}
         onClose={() => setDealForm({ open: false, deal: null })}

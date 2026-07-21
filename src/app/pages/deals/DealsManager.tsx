@@ -4,6 +4,7 @@ import {
   deleteDeal,
   type Client,
   type Deal,
+  type Process,
   type Project,
   type Service,
   type User,
@@ -50,6 +51,8 @@ export type DealsManagerProps = {
   clients: Client[];
   /** Услуги организации — для привязки услуги к сделке и резолва её названия. */
   services: Service[];
+  /** Процессы организации — для привязки сделки к процессу (передаётся в форму). */
+  processes: Process[];
   /** Операторы организации — для выбора/резолва ответственного. */
   users: User[];
   /** Предвыбранный проект при создании (со страницы проекта сделка создаётся в его разрезе). */
@@ -71,6 +74,7 @@ export function DealsManager({
   projects,
   clients,
   services,
+  processes,
   users,
   defaultProjectId,
   showProjectColumn = true,
@@ -352,6 +356,7 @@ export function DealsManager({
         projects={projects}
         clients={clients}
         services={services}
+        processes={processes}
         users={users}
         defaultProjectId={editing ? undefined : defaultProjectId}
         onClose={() => setFormOpen(false)}

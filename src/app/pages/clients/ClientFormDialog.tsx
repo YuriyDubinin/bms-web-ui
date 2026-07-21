@@ -22,6 +22,7 @@ import {
   clientSubjectType,
 } from './model';
 import { BuildingIcon, UserIcon } from './icons';
+import { ClientProjectsField } from './ClientProjectsField';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
   classes.filter(Boolean).join(' ');
@@ -499,7 +500,12 @@ export function ClientFormDialog({
               className={inputClass(!!errors.source)}
             />
           </Field>
-          <Field label="Проект" htmlFor="client-project" error={errors.project_id}>
+          <Field
+            label="Основной проект"
+            htmlFor="client-project"
+            error={errors.project_id}
+            hint={isEdit ? undefined : 'Доп. проекты можно добавить после создания'}
+          >
             <SelectSearch
               id="client-project"
               value={form.project_id}
@@ -518,6 +524,19 @@ export function ClientFormDialog({
             />
           </Field>
         </div>
+
+        {/* Проекты клиента (основной + доп. членства) — только в режиме редактирования:
+            attach/detach работают с уже существующим клиентом. */}
+        {isEdit && client ? (
+          <>
+            <SectionLabel>Проекты клиента</SectionLabel>
+            <ClientProjectsField
+              clientId={client.id}
+              mainProjectId={form.project_id}
+              allProjects={projects}
+            />
+          </>
+        ) : null}
 
         {/* Адрес */}
         <SectionLabel>Адрес</SectionLabel>

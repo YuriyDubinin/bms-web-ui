@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Paginated, SortOrder } from './projects';
+import type { Paginated, Project, SortOrder } from './projects';
 
 export type ClientStatus = 'LEAD' | 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
 
@@ -131,6 +131,55 @@ export function deleteClient(token: string, id: string): Promise<DeleteClientRes
   return api.delete<DeleteClientResponse>(
     '/clients/delete',
     { id },
+    { token, timeoutMs: CLIENTS_TIMEOUT_MS },
+  );
+}
+
+// ─────────── Проекты клиента (M:N): основной проект + дополнительные членства ───────────
+
+/** Ответ attach/detach — статус операции (идемпотентно). */
+export type ClientProjectLinkResponse = { status: 'ATTACHED' | 'DETACHED' };
+
+/**
+ * Все проекты клиента (основной + членства), без дублей. Какой из них основной —
+ * определяется сравнением с `client.project_id` на стороне UI.
+ */
+export function listClientProjects(
+  token: string,
+  clientId: string,
+  signal?: AbortSignal,
+): Promise<Project[]> {
+  return api
+    .get<{ items: Project[] }>(`/clients/projects/list?client_id=${encodeURIComponent(clientId)}`, {
+      token,
+      signal,
+      timeoutMs: CLIENTS_TIMEOUT_MS,
+    })
+    .then((res) => res.items ?? []);
+}
+
+/** Добавить клиента в проект (дополнительное членство). Идемпотентно. */
+export function attachClientProject(
+  token: string,
+  clientId: string,
+  projectId: string,
+): Promise<ClientProjectLinkResponse> {
+  return api.post<ClientProjectLinkResponse>(
+    '/clients/projects/attach',
+    { client_id: clientId, project_id: projectId },
+    { token, timeoutMs: CLIENTS_TIMEOUT_MS },
+  );
+}
+
+/** Убрать клиента из проекта (только дополнительное членство, не основной). Идемпотентно. */
+export function detachClientProject(
+  token: string,
+  clientId: string,
+  projectId: string,
+): Promise<ClientProjectLinkResponse> {
+  return api.delete<ClientProjectLinkResponse>(
+    '/clients/projects/detach',
+    { client_id: clientId, project_id: projectId },
     { token, timeoutMs: CLIENTS_TIMEOUT_MS },
   );
 }
