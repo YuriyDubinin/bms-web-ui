@@ -14,6 +14,10 @@ export type UseDealsParams = {
   projectId?: string;
   /** Ограничить выборку сделками этого клиента (серверный фильтр client_id). */
   clientId?: string;
+  /** Ограничить выборку сделками этой услуги (серверный фильтр service_id). */
+  serviceId?: string;
+  /** Ограничить выборку сделками этого процесса (серверный фильтр process_id). */
+  processId?: string;
 };
 
 /**
@@ -21,7 +25,7 @@ export type UseDealsParams = {
  * Берём целиком (page_size=100) и отдаём в клиентский DataTable — он сам делает поиск,
  * фильтрацию, сортировку и пагинацию. При 401 — разлогин через общий useAuth.
  */
-export function useDeals({ projectId, clientId }: UseDealsParams = {}): UseDeals {
+export function useDeals({ projectId, clientId, serviceId, processId }: UseDealsParams = {}): UseDeals {
   const { token, logout } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +49,8 @@ export function useDeals({ projectId, clientId }: UseDealsParams = {}): UseDeals
         order: 'desc',
         ...(projectId ? { project_id: projectId } : {}),
         ...(clientId ? { client_id: clientId } : {}),
+        ...(serviceId ? { service_id: serviceId } : {}),
+        ...(processId ? { process_id: processId } : {}),
       },
       controller.signal,
     )
@@ -65,7 +71,7 @@ export function useDeals({ projectId, clientId }: UseDealsParams = {}): UseDeals
       });
 
     return () => controller.abort();
-  }, [token, logout, reloadKey, projectId, clientId]);
+  }, [token, logout, reloadKey, projectId, clientId, serviceId, processId]);
 
   return { deals, isLoading, error, reload };
 }

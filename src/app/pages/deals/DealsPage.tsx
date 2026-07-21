@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../PageHeader';
 import { DealsManager } from './DealsManager';
 import { useDeals } from './useDeals';
@@ -8,6 +9,7 @@ import { useUsers } from '../tasks/useUsers';
 import { useProcesses } from '../processes/useProcesses';
 
 export function DealsPage() {
+  const navigate = useNavigate();
   const { deals, isLoading, error, reload } = useDeals();
   // Справочники для селектов формы и резолва имён в таблице.
   const { projects } = useProjects();
@@ -30,6 +32,7 @@ export function DealsPage() {
         services={services}
         processes={processes}
         users={users}
+        onRowClick={(d) => navigate(`/deals/${d.id}`)}
       />
     </>
   );

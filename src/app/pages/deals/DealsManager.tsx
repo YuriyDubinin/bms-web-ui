@@ -57,8 +57,16 @@ export type DealsManagerProps = {
   users: User[];
   /** Предвыбранный проект при создании (со страницы проекта сделка создаётся в его разрезе). */
   defaultProjectId?: string;
+  /** Предвыбранная услуга при создании (со страницы услуги сделка создаётся с её привязкой). */
+  defaultServiceId?: string;
+  /** Предвыбранный клиент при создании (со страницы клиента сделка создаётся с его привязкой). */
+  defaultClientId?: string;
+  /** Предвыбранный процесс при создании (со страницы процесса сделка создаётся с его привязкой). */
+  defaultProcessId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все сделки одного проекта). */
   showProjectColumn?: boolean;
+  /** Клик по строке — например, переход на внутреннюю страницу сделки. */
+  onRowClick?: (deal: Deal) => void;
 };
 
 /**
@@ -77,10 +85,16 @@ export function DealsManager({
   processes,
   users,
   defaultProjectId,
+  defaultServiceId,
+  defaultClientId,
+  defaultProcessId,
   showProjectColumn = true,
+  onRowClick,
 }: DealsManagerProps) {
   const { token, logout } = useAuth();
-  const inProjectContext = !!defaultProjectId;
+  // Встроенный контекст (страница проекта/услуги/клиента/процесса) — меняет тексты кнопок/пустого состояния.
+  const inProjectContext =
+    !!defaultProjectId || !!defaultServiceId || !!defaultClientId || !!defaultProcessId;
 
   const projectNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -330,6 +344,7 @@ export function DealsManager({
         columns={columns}
         getRowId={(d) => d.id}
         renderCard={renderCard}
+        onRowClick={onRowClick}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию сделки…"
@@ -341,7 +356,7 @@ export function DealsManager({
         emptyState={
           <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-1 px-6 py-16 text-center">
             <p className="text-sm text-fg-secondary">
-              {inProjectContext ? 'У этого проекта пока нет сделок' : 'Пока нет ни одной сделки'}
+              {inProjectContext ? 'Здесь пока нет сделок' : 'Пока нет ни одной сделки'}
             </p>
             <Button leftIcon={<PlusIcon />} onClick={openCreate}>
               {inProjectContext ? 'Добавить сделку' : 'Создать первую сделку'}
@@ -359,6 +374,9 @@ export function DealsManager({
         processes={processes}
         users={users}
         defaultProjectId={editing ? undefined : defaultProjectId}
+        defaultServiceId={editing ? undefined : defaultServiceId}
+        defaultClientId={editing ? undefined : defaultClientId}
+        defaultProcessId={editing ? undefined : defaultProcessId}
         onClose={() => setFormOpen(false)}
         onSaved={() => {
           setFormOpen(false);

@@ -118,6 +118,14 @@ export type TaskFormDialogProps = {
   processes?: Process[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
   defaultProjectId?: string;
+  /** Предвыбранная услуга при создании (например, со страницы услуги). */
+  defaultServiceId?: string;
+  /** Предвыбранный клиент при создании (например, со страницы клиента). */
+  defaultClientId?: string;
+  /** Предвыбранная сделка при создании (например, со страницы сделки). */
+  defaultDealId?: string;
+  /** Предвыбранный процесс при создании (например, со страницы процесса). */
+  defaultProcessId?: string;
   /** Предзаполненный срок при создании из календаря (значение для datetime-local: YYYY-MM-DDTHH:mm). */
   defaultDueAt?: string;
   onClose: () => void;
@@ -140,7 +148,14 @@ type FormState = {
   attributes: string;
 };
 
-function emptyForm(projectId = '', dueLocal = ''): FormState {
+function emptyForm(
+  projectId = '',
+  dueLocal = '',
+  serviceId = '',
+  clientId = '',
+  dealId = '',
+  processId = '',
+): FormState {
   return {
     title: '',
     description: '',
@@ -148,10 +163,10 @@ function emptyForm(projectId = '', dueLocal = ''): FormState {
     priority: 'MEDIUM',
     due_at: dueLocal,
     project_id: projectId,
-    client_id: '',
-    deal_id: '',
-    service_id: '',
-    process_id: '',
+    client_id: clientId,
+    deal_id: dealId,
+    service_id: serviceId,
+    process_id: processId,
     process_stage_id: '',
     assigned_to: '',
     attributes: '',
@@ -189,6 +204,10 @@ export function TaskFormDialog({
   services = [],
   processes = [],
   defaultProjectId,
+  defaultServiceId,
+  defaultClientId,
+  defaultDealId,
+  defaultProcessId,
   defaultDueAt,
   onClose,
   onSaved,
@@ -207,11 +226,31 @@ export function TaskFormDialog({
   // Заполняем форму при открытии: PUT перезаписывает задачу целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(task ? formFromTask(task) : emptyForm(defaultProjectId, defaultDueAt));
+    setForm(
+      task
+        ? formFromTask(task)
+        : emptyForm(
+            defaultProjectId,
+            defaultDueAt,
+            defaultServiceId,
+            defaultClientId,
+            defaultDealId,
+            defaultProcessId,
+          ),
+    );
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, task, defaultProjectId, defaultDueAt]);
+  }, [
+    open,
+    task,
+    defaultProjectId,
+    defaultDueAt,
+    defaultServiceId,
+    defaultClientId,
+    defaultDealId,
+    defaultProcessId,
+  ]);
 
   // Подгружаем этапы при выборе процесса; без процесса — этапов нет.
   useEffect(() => {

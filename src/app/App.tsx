@@ -14,11 +14,11 @@ const CalendarPage = lazy(() =>
   import('@app/pages/calendar').then((m) => ({ default: m.CalendarPage })),
 );
 import { ProjectsPage, ProjectDetailPage } from '@app/pages/projects';
-import { ServicesPage } from '@app/pages/services';
-import { ClientsPage } from '@app/pages/clients';
-import { DealsPage } from '@app/pages/deals';
-import { TasksPage } from '@app/pages/tasks';
-import { ProcessesPage } from '@app/pages/processes';
+import { ServicesPage, ServiceDetailPage } from '@app/pages/services';
+import { ClientsPage, ClientDetailPage } from '@app/pages/clients';
+import { DealsPage, DealDetailPage } from '@app/pages/deals';
+import { TasksPage, TaskDetailPage } from '@app/pages/tasks';
+import { ProcessesPage, ProcessDetailPage } from '@app/pages/processes';
 import { BotsPage } from '@app/pages/BotsPage';
 import { SettingsPage } from '@app/pages/SettingsPage';
 
@@ -69,10 +69,15 @@ export function App() {
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/:id" element={<ProjectDetailPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/services/:id" element={<ServiceDetailPage />} />
         <Route path="/clients" element={<ClientsPage />} />
+        <Route path="/clients/:id" element={<ClientDetailPage />} />
         <Route path="/deals" element={<DealsPage />} />
+        <Route path="/deals/:id" element={<DealDetailPage />} />
         <Route path="/tasks" element={<TasksPage />} />
+        <Route path="/tasks/:id" element={<TaskDetailPage />} />
         <Route path="/processes" element={<ProcessesPage />} />
+        <Route path="/processes/:id" element={<ProcessDetailPage />} />
         <Route
           path="/calendar"
           element={

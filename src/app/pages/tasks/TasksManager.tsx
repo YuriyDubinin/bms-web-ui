@@ -63,8 +63,18 @@ export type TasksManagerProps = {
   processes?: Process[];
   /** Предвыбранный проект при создании (со страницы проекта задача создаётся в его разрезе). */
   defaultProjectId?: string;
+  /** Предвыбранная услуга при создании (со страницы услуги задача создаётся с её привязкой). */
+  defaultServiceId?: string;
+  /** Предвыбранный клиент при создании (со страницы клиента задача создаётся с его привязкой). */
+  defaultClientId?: string;
+  /** Предвыбранная сделка при создании (со страницы сделки задача создаётся с её привязкой). */
+  defaultDealId?: string;
+  /** Предвыбранный процесс при создании (со страницы процесса задача создаётся с его привязкой). */
+  defaultProcessId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все задачи одного проекта). */
   showProjectColumn?: boolean;
+  /** Клик по строке — например, переход на внутреннюю страницу задачи. */
+  onRowClick?: (task: Task) => void;
 };
 
 /**
@@ -84,10 +94,21 @@ export function TasksManager({
   services = [],
   processes = [],
   defaultProjectId,
+  defaultServiceId,
+  defaultClientId,
+  defaultDealId,
+  defaultProcessId,
   showProjectColumn = true,
+  onRowClick,
 }: TasksManagerProps) {
   const { token, logout } = useAuth();
-  const inProjectContext = !!defaultProjectId;
+  // Встроенный контекст (страница проекта/услуги/клиента/сделки/процесса) — меняет тексты кнопок/пустого состояния.
+  const inProjectContext =
+    !!defaultProjectId ||
+    !!defaultServiceId ||
+    !!defaultClientId ||
+    !!defaultDealId ||
+    !!defaultProcessId;
 
   const projectNameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -330,6 +351,7 @@ export function TasksManager({
         columns={columns}
         getRowId={(t) => t.id}
         renderCard={renderCard}
+        onRowClick={onRowClick}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по заголовку задачи…"
@@ -341,7 +363,7 @@ export function TasksManager({
         emptyState={
           <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-1 px-6 py-16 text-center">
             <p className="text-sm text-fg-secondary">
-              {inProjectContext ? 'У этого проекта пока нет задач' : 'Пока нет ни одной задачи'}
+              {inProjectContext ? 'Здесь пока нет задач' : 'Пока нет ни одной задачи'}
             </p>
             <Button leftIcon={<PlusIcon />} onClick={openCreate}>
               {inProjectContext ? 'Добавить задачу' : 'Создать первую задачу'}
@@ -360,6 +382,10 @@ export function TasksManager({
         services={services}
         processes={processes}
         defaultProjectId={editing ? undefined : defaultProjectId}
+        defaultServiceId={editing ? undefined : defaultServiceId}
+        defaultClientId={editing ? undefined : defaultClientId}
+        defaultDealId={editing ? undefined : defaultDealId}
+        defaultProcessId={editing ? undefined : defaultProcessId}
         onClose={() => setFormOpen(false)}
         onSaved={() => {
           setFormOpen(false);

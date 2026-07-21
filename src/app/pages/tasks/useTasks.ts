@@ -14,6 +14,12 @@ export type UseTasksParams = {
   projectId?: string;
   /** Ограничить выборку задачами этого клиента (серверный фильтр client_id). */
   clientId?: string;
+  /** Ограничить выборку задачами этой услуги (серверный фильтр service_id). */
+  serviceId?: string;
+  /** Ограничить выборку задачами этой сделки (серверный фильтр deal_id). */
+  dealId?: string;
+  /** Ограничить выборку задачами этого процесса (серверный фильтр process_id). */
+  processId?: string;
 };
 
 /**
@@ -21,7 +27,13 @@ export type UseTasksParams = {
  * Берём целиком (page_size=100) и отдаём в клиентский DataTable — он сам делает поиск,
  * фильтрацию, сортировку и пагинацию. При 401 — разлогин через общий useAuth.
  */
-export function useTasks({ projectId, clientId }: UseTasksParams = {}): UseTasks {
+export function useTasks({
+  projectId,
+  clientId,
+  serviceId,
+  dealId,
+  processId,
+}: UseTasksParams = {}): UseTasks {
   const { token, logout } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +57,9 @@ export function useTasks({ projectId, clientId }: UseTasksParams = {}): UseTasks
         order: 'desc',
         ...(projectId ? { project_id: projectId } : {}),
         ...(clientId ? { client_id: clientId } : {}),
+        ...(serviceId ? { service_id: serviceId } : {}),
+        ...(dealId ? { deal_id: dealId } : {}),
+        ...(processId ? { process_id: processId } : {}),
       },
       controller.signal,
     )
@@ -65,7 +80,7 @@ export function useTasks({ projectId, clientId }: UseTasksParams = {}): UseTasks
       });
 
     return () => controller.abort();
-  }, [token, logout, reloadKey, projectId, clientId]);
+  }, [token, logout, reloadKey, projectId, clientId, serviceId, dealId, processId]);
 
   return { tasks, isLoading, error, reload };
 }

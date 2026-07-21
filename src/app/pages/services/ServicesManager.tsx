@@ -44,6 +44,8 @@ export type ServicesManagerProps = {
   defaultProjectId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все услуги одного проекта). */
   showProjectColumn?: boolean;
+  /** Клик по строке — например, переход на внутреннюю страницу услуги. */
+  onRowClick?: (service: Service) => void;
 };
 
 /**
@@ -60,6 +62,7 @@ export function ServicesManager({
   projects,
   defaultProjectId,
   showProjectColumn = true,
+  onRowClick,
 }: ServicesManagerProps) {
   const { token, logout } = useAuth();
   const inProjectContext = !!defaultProjectId;
@@ -271,6 +274,7 @@ export function ServicesManager({
         columns={columns}
         getRowId={(s) => s.id}
         renderCard={renderCard}
+        onRowClick={onRowClick}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию услуги…"

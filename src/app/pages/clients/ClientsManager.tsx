@@ -51,6 +51,8 @@ export type ClientsManagerProps = {
   defaultProjectId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все клиенты одного проекта). */
   showProjectColumn?: boolean;
+  /** Клик по строке — например, переход на внутреннюю страницу клиента. */
+  onRowClick?: (client: Client) => void;
 };
 
 /**
@@ -66,6 +68,7 @@ export function ClientsManager({
   projects,
   defaultProjectId,
   showProjectColumn = true,
+  onRowClick,
 }: ClientsManagerProps) {
   const { token, logout } = useAuth();
   const inProjectContext = !!defaultProjectId;
@@ -282,6 +285,7 @@ export function ClientsManager({
         columns={columns}
         getRowId={(c) => c.id}
         renderCard={renderCard}
+        onRowClick={onRowClick}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по имени, компании, email…"

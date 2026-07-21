@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../PageHeader';
 import { ClientsManager } from './ClientsManager';
 import { useClients } from './useClients';
 import { useProjects } from '../projects/useProjects';
 
 export function ClientsPage() {
+  const navigate = useNavigate();
   const { clients, isLoading, error, reload } = useClients();
   // Проекты нужны для выбора «домашнего» проекта в форме и показа его имени в таблице.
   const { projects } = useProjects();
@@ -18,6 +20,7 @@ export function ClientsPage() {
         error={error}
         reload={reload}
         projects={projects}
+        onRowClick={(c) => navigate(`/clients/${c.id}`)}
       />
     </>
   );

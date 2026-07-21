@@ -115,6 +115,12 @@ export type DealFormDialogProps = {
   users: User[];
   /** Предвыбранный проект при создании (например, со страницы проекта). */
   defaultProjectId?: string;
+  /** Предвыбранная услуга при создании (например, со страницы услуги). */
+  defaultServiceId?: string;
+  /** Предвыбранный клиент при создании (например, со страницы клиента). */
+  defaultClientId?: string;
+  /** Предвыбранный процесс при создании (например, со страницы процесса). */
+  defaultProcessId?: string;
   /** Предзаполненная дата закрытия при создании из календаря (YYYY-MM-DD). */
   defaultCloseAt?: string;
   onClose: () => void;
@@ -138,7 +144,13 @@ type FormState = {
   attributes: string;
 };
 
-function emptyForm(projectId = '', closeDate = ''): FormState {
+function emptyForm(
+  projectId = '',
+  closeDate = '',
+  serviceId = '',
+  clientId = '',
+  processId = '',
+): FormState {
   return {
     title: '',
     description: '',
@@ -149,9 +161,9 @@ function emptyForm(projectId = '', closeDate = ''): FormState {
     probability: '',
     expected_close_at: closeDate,
     project_id: projectId,
-    client_id: '',
-    service_id: '',
-    process_id: '',
+    client_id: clientId,
+    service_id: serviceId,
+    process_id: processId,
     assigned_to: '',
     attributes: '',
   };
@@ -189,6 +201,9 @@ export function DealFormDialog({
   processes,
   users,
   defaultProjectId,
+  defaultServiceId,
+  defaultClientId,
+  defaultProcessId,
   defaultCloseAt,
   onClose,
   onSaved,
@@ -204,11 +219,23 @@ export function DealFormDialog({
   // Заполняем форму при открытии: PUT перезаписывает сделку целиком, поэтому подставляем ВСЕ поля.
   useEffect(() => {
     if (!open) return;
-    setForm(deal ? formFromDeal(deal) : emptyForm(defaultProjectId, defaultCloseAt));
+    setForm(
+      deal
+        ? formFromDeal(deal)
+        : emptyForm(defaultProjectId, defaultCloseAt, defaultServiceId, defaultClientId, defaultProcessId),
+    );
     setErrors({});
     setFormError(null);
     setSubmitting(false);
-  }, [open, deal, defaultProjectId, defaultCloseAt]);
+  }, [
+    open,
+    deal,
+    defaultProjectId,
+    defaultCloseAt,
+    defaultServiceId,
+    defaultClientId,
+    defaultProcessId,
+  ]);
 
   const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

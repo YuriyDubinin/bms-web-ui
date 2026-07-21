@@ -44,6 +44,8 @@ export type ProcessesManagerProps = {
   defaultProjectId?: string;
   /** Показывать колонку «Проект». На странице проекта не нужна (все процессы одного проекта). */
   showProjectColumn?: boolean;
+  /** Клик по строке — например, переход на внутреннюю страницу процесса. */
+  onRowClick?: (process: Process) => void;
 };
 
 /**
@@ -59,6 +61,7 @@ export function ProcessesManager({
   projects,
   defaultProjectId,
   showProjectColumn = true,
+  onRowClick,
 }: ProcessesManagerProps) {
   const { token, logout } = useAuth();
   const inProjectContext = !!defaultProjectId;
@@ -257,6 +260,7 @@ export function ProcessesManager({
         columns={columns}
         getRowId={(p) => p.id}
         renderCard={renderCard}
+        onRowClick={onRowClick}
         isLoading={isLoading}
         pageSize={10}
         searchPlaceholder="Поиск по названию процесса…"

@@ -1,26 +1,25 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ApiError, deleteProject } from '@app/api';
+import { ApiError, deleteProcess } from '@app/api';
 import { useAuth } from '@app/auth';
 import { Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
-import { useProjects } from './useProjects';
-import { ProjectFormDialog } from './ProjectFormDialog';
+import { useProcesses } from './useProcesses';
+import { ProcessFormDialog } from './ProcessFormDialog';
 import { StatusChip } from './StatusChip';
-import { ArrowLeftIcon, PencilIcon, TrashIcon } from './icons';
+import { PencilIcon, TrashIcon } from './icons';
 import { formatDateTime, formatPeriod } from './model';
+import { ArrowLeftIcon } from '../projects/icons';
 import { ServicesManager, useServices } from '../services';
 import { ClientsManager, useClients } from '../clients';
-import { TasksManager, useTasks, useUsers } from '../tasks';
 import { DealsManager, useDeals } from '../deals';
-import { ProcessesManager, useProcesses } from '../processes';
+import { TasksManager, useTasks, useUsers } from '../tasks';
+import { useProjects } from '../projects/useProjects';
 
 function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
     <div
       className={[
-        // min-w-0: в grid-раскладке трек иначе тянется по max-content (truncate-значения
-        // MetaRow с white-space:nowrap), и карточка вылазит за вьюпорт на мобиле.
         'min-w-0 rounded-lg border border-border-subtle bg-bg-1 p-5 shadow-sm transition-colors duration-300',
         className,
       ]
@@ -41,7 +40,7 @@ function MetaRow({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-type SectionKey = 'clients' | 'services' | 'tasks' | 'deals' | 'processes';
+type SectionKey = 'services' | 'clients' | 'deals' | 'tasks';
 type TabKey = 'overview' | SectionKey;
 
 type Section = {
@@ -51,15 +50,14 @@ type Section = {
 };
 
 /**
- * Разделы связанных сущностей проекта — единый источник порядка для KPI-счётчиков и вкладок.
- * Порядок совпадает с боковой панелью: услуги → клиенты → сделки → задачи → процессы.
+ * Разделы связанных сущностей процесса — единый источник порядка для KPI-счётчиков и вкладок.
+ * Порядок совпадает с боковой панелью (за вычетом самих процессов): услуги → клиенты → сделки → задачи.
  */
 const SECTIONS: Section[] = [
   { key: 'services', label: 'Услуги', icon: 'services' },
   { key: 'clients', label: 'Клиенты', icon: 'clients' },
   { key: 'deals', label: 'Сделки', icon: 'deals' },
   { key: 'tasks', label: 'Задачи', icon: 'tasks' },
-  { key: 'processes', label: 'Процессы', icon: 'processes' },
 ];
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -67,50 +65,56 @@ const TABS: { key: TabKey; label: string }[] = [
   ...SECTIONS.map((s) => ({ key: s.key, label: s.label })),
 ];
 
-export function ProjectDetailPage() {
+export function ProcessDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { token, logout } = useAuth();
-  const { projects, isLoading, error, reload } = useProjects();
-  // Услуги этого проекта — для счётчика в KPI и для вкладки «Услуги».
-  const {
-    services,
-    isLoading: servicesLoading,
-    error: servicesError,
-    reload: reloadServices,
-  } = useServices({ projectId: id });
-  // Клиенты этого проекта — для счётчика в KPI и для вкладки «Клиенты».
-  const {
-    clients,
-    isLoading: clientsLoading,
-    error: clientsError,
-    reload: reloadClients,
-  } = useClients({ projectId: id });
-  // Задачи этого проекта — для счётчика в KPI и для вкладки «Задачи».
-  const {
-    tasks,
-    isLoading: tasksLoading,
-    error: tasksError,
-    reload: reloadTasks,
-  } = useTasks({ projectId: id });
-  // Операторы организации — для выбора/резолва исполнителя в задачах.
-  const { users } = useUsers();
-  // Сделки этого проекта — для счётчика в KPI, вкладки «Сделки» и привязки задачи к сделке.
+  const { processes, isLoading, error, reload } = useProcesses();
+
+  // Прямые связи по process_id: сделки и задачи этого процесса.
   const {
     deals,
     isLoading: dealsLoading,
     error: dealsError,
     reload: reloadDeals,
-  } = useDeals({ projectId: id });
-  // Процессы этого проекта — для счётчика в KPI и вкладки «Процессы».
+  } = useDeals({ processId: id });
   const {
-    processes,
-    isLoading: processesLoading,
-    error: processesError,
-    reload: reloadProcesses,
-  } = useProcesses({ projectId: id });
+    tasks,
+    isLoading: tasksLoading,
+    error: tasksError,
+    reload: reloadTasks,
+  } = useTasks({ processId: id });
 
-  const project = projects.find((p) => p.id === id) ?? null;
+  // Справочники: проекты (владелец + формы), полные каталоги услуг/клиентов (для форм и
+  // резолва косвенных связей), операторы (исполнители/ответственные).
+  const { projects } = useProjects();
+  const { services, error: servicesError, reload: reloadServices } = useServices();
+  const { clients, error: clientsError, reload: reloadClients } = useClients();
+  const { users } = useUsers();
+
+  const process = processes.find((p) => p.id === id) ?? null;
+
+  // Косвенные связи: услуги и клиенты, фигурирующие в сделках/задачах процесса
+  // (прямого фильтра process_id у них нет) — собираем по их service_id / client_id.
+  const processServices = useMemo(() => {
+    const ids = new Set<string>();
+    for (const d of deals) if (d.service_id) ids.add(d.service_id);
+    for (const t of tasks) if (t.service_id) ids.add(t.service_id);
+    return services.filter((s) => ids.has(s.id));
+  }, [deals, tasks, services]);
+
+  const processClients = useMemo(() => {
+    const ids = new Set<string>();
+    for (const d of deals) if (d.client_id) ids.add(d.client_id);
+    for (const t of tasks) if (t.client_id) ids.add(t.client_id);
+    return clients.filter((c) => ids.has(c.id));
+  }, [deals, tasks, clients]);
+
+  const projectName = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of projects) map.set(p.id, p.name);
+    return (pid: string | null) => (pid ? (map.get(pid) ?? '') : '');
+  }, [projects]);
 
   const [tab, setTab] = useState<TabKey>('overview');
   const [formOpen, setFormOpen] = useState(false);
@@ -119,22 +123,22 @@ export function ProjectDetailPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const confirmDelete = async () => {
-    if (!project || !token) return;
+    if (!process || !token) return;
     setDeleteLoading(true);
     setDeleteError(null);
     try {
-      await deleteProject(token, project.id);
-      navigate('/projects');
+      await deleteProcess(token, process.id);
+      navigate('/processes');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         void logout();
         return;
       }
       if (err instanceof ApiError && err.status === 404) {
-        navigate('/projects');
+        navigate('/processes');
         return;
       }
-      setDeleteError('Не удалось удалить проект. Попробуйте ещё раз.');
+      setDeleteError('Не удалось удалить процесс. Попробуйте ещё раз.');
     } finally {
       setDeleteLoading(false);
     }
@@ -143,16 +147,16 @@ export function ProjectDetailPage() {
   const backLink = (
     <button
       type="button"
-      onClick={() => navigate('/projects')}
+      onClick={() => navigate('/processes')}
       className="mb-4 inline-flex items-center gap-1.5 text-sm text-fg-muted transition-colors hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
     >
       <ArrowLeftIcon />
-      Проекты
+      Процессы
     </button>
   );
 
-  // Загрузка (проект ещё не найден в списке).
-  if (isLoading && !project) {
+  // Загрузка (процесс ещё не найден в списке).
+  if (isLoading && !process) {
     return (
       <>
         {backLink}
@@ -170,49 +174,46 @@ export function ProjectDetailPage() {
   }
 
   // Не найден (загрузка завершена).
-  if (!project) {
+  if (!process) {
     return (
       <>
         {backLink}
         <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-1 px-6 py-16 text-center">
-          <p className="text-sm text-fg-secondary">
-            {error ?? 'Проект не найден или был удалён.'}
-          </p>
-          <Button variant="secondary" onClick={() => navigate('/projects')}>
-            К списку проектов
+          <p className="text-sm text-fg-secondary">{error ?? 'Процесс не найден или был удалён.'}</p>
+          <Button variant="secondary" onClick={() => navigate('/processes')}>
+            К списку процессов
           </Button>
         </div>
       </>
     );
   }
 
-  const hasAttributes = Object.keys(project.attributes).length > 0;
+  const hasAttributes = Object.keys(process.attributes).length > 0;
+  const ownerProject = projectName(process.project_id);
+  const period = formatPeriod(process.starts_at, process.ends_at);
+  const subtitle = [ownerProject, period !== '—' ? period : ''].filter(Boolean).join(' · ') || 'Процесс';
 
   // Значения KPI-счётчиков по ключу раздела. Счётчик всегда показывает число: 0 (пока
   // пусто/грузится/ошибка) или реальное количество — без индикатора загрузки «…».
   const sectionCounts: Record<SectionKey, number> = {
-    services: services.length,
-    clients: clients.length,
+    services: processServices.length,
+    clients: processClients.length,
     deals: deals.length,
     tasks: tasks.length,
-    processes: processes.length,
   };
 
   return (
     <>
       {backLink}
 
-      {/* Шапка проекта */}
+      {/* Шапка процесса */}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{project.name}</h1>
-            <StatusChip status={project.status} />
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{process.name}</h1>
+            <StatusChip status={process.status} />
           </div>
-          <p className="mt-1 text-sm text-fg-secondary">
-            {project.direction || 'Без направления'}
-            {project.slug ? <span className="font-mono text-fg-muted"> · {project.slug}</span> : null}
-          </p>
+          <p className="mt-1 min-w-0 truncate text-sm text-fg-secondary">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="sm" leftIcon={<PencilIcon />} onClick={() => setFormOpen(true)}>
@@ -225,7 +226,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* KPI-счётчики разделов (клик — переход на вкладку) */}
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {SECTIONS.map((s) => (
           <button
             key={s.key}
@@ -272,18 +273,18 @@ export function ProjectDetailPage() {
         {tab === 'overview' ? (
           <div className="grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
-              <h2 className="text-base font-semibold text-fg-primary">О проекте</h2>
-              <p className="mt-2 text-sm leading-relaxed text-fg-secondary">
-                {project.description || 'Описание не заполнено.'}
-              </p>
+              <h2 className="text-base font-semibold text-fg-primary">О процессе</h2>
+              {process.description ? (
+                <p className="mt-2 text-sm leading-relaxed text-fg-secondary">{process.description}</p>
+              ) : null}
               <dl className="mt-4 border-t border-border-subtle pt-2">
-                <MetaRow label="Направление">{project.direction || '—'}</MetaRow>
-                <MetaRow label="Slug">
-                  {project.slug ? <span className="font-mono">{project.slug}</span> : '—'}
+                <MetaRow label="Проект">
+                  {ownerProject ? ownerProject : <span className="text-fg-muted">—</span>}
                 </MetaRow>
-                <MetaRow label="Период">{formatPeriod(project.starts_at, project.ends_at)}</MetaRow>
-                <MetaRow label="Создан">{formatDateTime(project.created_at)}</MetaRow>
-                <MetaRow label="Обновлён">{formatDateTime(project.updated_at)}</MetaRow>
+                <MetaRow label="Период">{period}</MetaRow>
+                <MetaRow label="Создан">{formatDateTime(process.created_at)}</MetaRow>
+                <MetaRow label="Обновлён">{formatDateTime(process.updated_at)}</MetaRow>
+                <MetaRow label="Завершён">{formatDateTime(process.closed_at)}</MetaRow>
               </dl>
             </Card>
 
@@ -291,7 +292,7 @@ export function ProjectDetailPage() {
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
               {hasAttributes ? (
                 <dl className="mt-3">
-                  {Object.entries(project.attributes).map(([key, value]) => (
+                  {Object.entries(process.attributes).map(([key, value]) => (
                     <MetaRow key={key} label={key}>
                       {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                     </MetaRow>
@@ -304,40 +305,23 @@ export function ProjectDetailPage() {
           </div>
         ) : tab === 'services' ? (
           <ServicesManager
-            services={services}
-            isLoading={servicesLoading}
-            error={servicesError}
+            services={processServices}
+            isLoading={dealsLoading || tasksLoading}
+            error={servicesError ?? dealsError ?? tasksError}
             reload={reloadServices}
             projects={projects}
-            defaultProjectId={project.id}
-            showProjectColumn={false}
+            showProjectColumn
             onRowClick={(s) => navigate(`/services/${s.id}`)}
           />
         ) : tab === 'clients' ? (
           <ClientsManager
-            clients={clients}
-            isLoading={clientsLoading}
-            error={clientsError}
+            clients={processClients}
+            isLoading={dealsLoading || tasksLoading}
+            error={clientsError ?? dealsError ?? tasksError}
             reload={reloadClients}
             projects={projects}
-            defaultProjectId={project.id}
-            showProjectColumn={false}
+            showProjectColumn
             onRowClick={(c) => navigate(`/clients/${c.id}`)}
-          />
-        ) : tab === 'tasks' ? (
-          <TasksManager
-            tasks={tasks}
-            isLoading={tasksLoading}
-            error={tasksError}
-            reload={reloadTasks}
-            projects={projects}
-            clients={clients}
-            deals={deals}
-            users={users}
-            services={services}
-            defaultProjectId={project.id}
-            showProjectColumn={false}
-            onRowClick={(t) => navigate(`/tasks/${t.id}`)}
           />
         ) : tab === 'deals' ? (
           <DealsManager
@@ -350,27 +334,33 @@ export function ProjectDetailPage() {
             services={services}
             processes={processes}
             users={users}
-            defaultProjectId={project.id}
-            showProjectColumn={false}
+            defaultProcessId={process.id}
+            showProjectColumn
             onRowClick={(d) => navigate(`/deals/${d.id}`)}
           />
-        ) : tab === 'processes' ? (
-          <ProcessesManager
-            processes={processes}
-            isLoading={processesLoading}
-            error={processesError}
-            reload={reloadProcesses}
+        ) : tab === 'tasks' ? (
+          <TasksManager
+            tasks={tasks}
+            isLoading={tasksLoading}
+            error={tasksError}
+            reload={reloadTasks}
             projects={projects}
-            defaultProjectId={project.id}
-            showProjectColumn={false}
-            onRowClick={(p) => navigate(`/processes/${p.id}`)}
+            clients={clients}
+            deals={deals}
+            users={users}
+            services={services}
+            processes={processes}
+            defaultProcessId={process.id}
+            showProjectColumn
+            onRowClick={(t) => navigate(`/tasks/${t.id}`)}
           />
         ) : null}
       </div>
 
-      <ProjectFormDialog
+      <ProcessFormDialog
         open={formOpen}
-        project={project}
+        process={process}
+        projects={projects}
         onClose={() => setFormOpen(false)}
         onSaved={() => {
           setFormOpen(false);
@@ -382,15 +372,15 @@ export function ProjectDetailPage() {
         open={deleteOpen}
         onClose={() => (deleteLoading ? undefined : setDeleteOpen(false))}
         onConfirm={confirmDelete}
-        title="Удалить проект?"
+        title="Удалить процесс?"
         confirmLabel="Удалить"
         confirmVariant="danger"
         loading={deleteLoading}
       >
         <div className="flex flex-col gap-2">
           <p className="text-sm text-fg-secondary">
-            Проект <span className="font-medium text-fg-primary">{project.name}</span> будет удалён.
-            Прикреплённые услуги, клиенты и задачи не удаляются, но останутся без проекта.
+            Процесс <span className="font-medium text-fg-primary">{process.name}</span> будет удалён.
+            Это действие мягкое — процесс и его этапы исчезнут из списков.
           </p>
           {deleteError ? <p className="text-sm text-state-error">{deleteError}</p> : null}
         </div>
