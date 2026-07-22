@@ -75,6 +75,9 @@ export {
   updateProcess,
   deleteProcess,
   listProcessStages,
+  createProcessStage,
+  updateProcessStage,
+  deleteProcessStage,
 } from './processes';
 export type {
   Process,
@@ -85,6 +88,9 @@ export type {
   ProcessInput,
   UpdateProcessInput,
   DeleteProcessResponse,
+  ProcessStageInput,
+  UpdateProcessStageInput,
+  DeleteProcessStageResponse,
 } from './processes';
 export {
   getSummaryStats,

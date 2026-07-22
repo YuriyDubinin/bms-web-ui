@@ -148,3 +148,58 @@ export function listProcessStages(
     })
     .then((res) => res.items ?? []);
 }
+
+/**
+ * Тело create этапа процесса. `position` необязателен — если не задать, бэкенд добавит
+ * этап в конец. Необязательные поля опускаем (не шлём пустыми/null).
+ */
+export type ProcessStageInput = {
+  /** Процесс-владелец этапа. */
+  process_id: string;
+  name: string;
+  description?: string;
+  position?: number;
+  attributes?: Record<string, unknown>;
+};
+
+/**
+ * Тело update этапа. PUT-семантика (полная замена), поэтому шлём все значимые поля;
+ * `process_id` не передаём — этап не меняет владельца.
+ */
+export type UpdateProcessStageInput = {
+  id: string;
+  name: string;
+  description?: string;
+  position?: number;
+  attributes?: Record<string, unknown>;
+};
+
+export type DeleteProcessStageResponse = { id: string; deleted_at: string };
+
+export function createProcessStage(token: string, input: ProcessStageInput): Promise<ProcessStage> {
+  return api.post<ProcessStage>('/processes/stages/create', input, {
+    token,
+    timeoutMs: PROCESSES_TIMEOUT_MS,
+  });
+}
+
+export function updateProcessStage(
+  token: string,
+  input: UpdateProcessStageInput,
+): Promise<ProcessStage> {
+  return api.put<ProcessStage>('/processes/stages/update', input, {
+    token,
+    timeoutMs: PROCESSES_TIMEOUT_MS,
+  });
+}
+
+export function deleteProcessStage(
+  token: string,
+  id: string,
+): Promise<DeleteProcessStageResponse> {
+  return api.delete<DeleteProcessStageResponse>(
+    '/processes/stages/delete',
+    { id },
+    { token, timeoutMs: PROCESSES_TIMEOUT_MS },
+  );
+}

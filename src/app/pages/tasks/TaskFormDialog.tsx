@@ -126,6 +126,8 @@ export type TaskFormDialogProps = {
   defaultDealId?: string;
   /** Предвыбранный процесс при создании (например, со страницы процесса). */
   defaultProcessId?: string;
+  /** Предвыбранный этап процесса при создании (например, из конструктора этапов). Требует defaultProcessId. */
+  defaultProcessStageId?: string;
   /** Предзаполненный срок при создании из календаря (значение для datetime-local: YYYY-MM-DDTHH:mm). */
   defaultDueAt?: string;
   onClose: () => void;
@@ -155,6 +157,7 @@ function emptyForm(
   clientId = '',
   dealId = '',
   processId = '',
+  processStageId = '',
 ): FormState {
   return {
     title: '',
@@ -167,7 +170,8 @@ function emptyForm(
     deal_id: dealId,
     service_id: serviceId,
     process_id: processId,
-    process_stage_id: '',
+    // Этап имеет смысл только вместе с процессом — сбрасываем, если процесс не задан.
+    process_stage_id: processId ? processStageId : '',
     assigned_to: '',
     attributes: '',
   };
@@ -208,6 +212,7 @@ export function TaskFormDialog({
   defaultClientId,
   defaultDealId,
   defaultProcessId,
+  defaultProcessStageId,
   defaultDueAt,
   onClose,
   onSaved,
@@ -236,6 +241,7 @@ export function TaskFormDialog({
             defaultClientId,
             defaultDealId,
             defaultProcessId,
+            defaultProcessStageId,
           ),
     );
     setErrors({});
@@ -250,6 +256,7 @@ export function TaskFormDialog({
     defaultClientId,
     defaultDealId,
     defaultProcessId,
+    defaultProcessStageId,
   ]);
 
   // Подгружаем этапы при выборе процесса; без процесса — этапов нет.

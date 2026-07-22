@@ -6,6 +6,7 @@ import { Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useProcesses } from './useProcesses';
 import { ProcessFormDialog } from './ProcessFormDialog';
+import { ProcessStagesBoard, CURRENT_STAGE_ATTR } from './ProcessStagesBoard';
 import { StatusChip } from './StatusChip';
 import { PencilIcon, TrashIcon } from './icons';
 import { formatDateTime, formatPeriod } from './model';
@@ -188,7 +189,12 @@ export function ProcessDetailPage() {
     );
   }
 
-  const hasAttributes = Object.keys(process.attributes).length > 0;
+  // Служебный ключ текущего этапа не показываем как пользовательский атрибут — им управляет
+  // конструктор этапов.
+  const visibleAttributes = Object.entries(process.attributes).filter(
+    ([key]) => key !== CURRENT_STAGE_ATTR,
+  );
+  const hasAttributes = visibleAttributes.length > 0;
   const ownerProject = projectName(process.project_id);
   const period = formatPeriod(process.starts_at, process.ends_at);
   const subtitle = [ownerProject, period !== '—' ? period : ''].filter(Boolean).join(' · ') || 'Процесс';
@@ -224,6 +230,20 @@ export function ProcessDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Конструктор этапов процесса (до счётчиков): пайплайн этапов + задачи на каждом этапе */}
+      <ProcessStagesBoard
+        process={process}
+        tasks={tasks}
+        projects={projects}
+        clients={clients}
+        deals={deals}
+        users={users}
+        services={services}
+        processes={processes}
+        reloadTasks={reloadTasks}
+        onOpenTask={(t) => navigate(`/tasks/${t.id}`)}
+      />
 
       {/* KPI-счётчики разделов (клик — переход на вкладку) */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -292,7 +312,7 @@ export function ProcessDetailPage() {
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
               {hasAttributes ? (
                 <dl className="mt-3">
-                  {Object.entries(process.attributes).map(([key, value]) => (
+                  {visibleAttributes.map(([key, value]) => (
                     <MetaRow key={key} label={key}>
                       {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                     </MetaRow>
