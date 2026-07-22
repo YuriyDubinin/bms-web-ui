@@ -172,7 +172,7 @@ function IconButton({
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-bg-2 hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-border-subtle hover:text-fg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>
@@ -499,28 +499,27 @@ export function ProcessStagesBoard({
 
   const stepCircleClass = (current: boolean) =>
     cx(
-      'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-      current ? 'bg-accent-muted text-accent' : 'bg-bg-2 text-fg-muted',
+      'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular-nums',
+      current ? 'bg-accent text-accent-on' : 'bg-bg-2 text-fg-muted',
     );
 
-  const countBadgeClass = (current: boolean) =>
+  const countBadgeClass = (active: boolean) =>
     cx(
-      'ml-auto shrink-0 rounded-full px-1.5 py-0.5 font-mono text-[11px] tabular-nums',
-      current ? 'bg-accent-muted text-accent' : 'bg-bg-2 text-fg-muted',
+      'ml-auto flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center rounded-full border px-1 font-mono text-[11px] tabular-nums',
+      active ? 'border-accent text-accent' : 'border-border-subtle text-fg-muted',
     );
 
-  const pillClass = (selected: boolean, current: boolean) =>
+  const pillClass = (selected: boolean) =>
     cx(
-      'flex min-w-[9rem] max-w-[15rem] shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm transition-colors',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-      current
-        ? 'border-accent bg-accent-muted'
-        : 'border-border-subtle bg-bg-1 hover:border-border-strong',
-      selected ? 'ring-2 ring-accent' : '',
+      'flex h-11 min-w-[8.5rem] max-w-[14rem] shrink-0 items-center gap-2.5 rounded-lg border px-3 text-left text-sm transition-colors duration-150',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
+      selected
+        ? 'border-accent bg-accent-muted shadow-sm'
+        : 'border-border-subtle bg-bg-1 hover:border-border-strong hover:bg-bg-2',
     );
 
   const addStageInput = (
-    <div className="flex shrink-0 items-center gap-1 rounded-lg border border-accent bg-bg-1 px-2 py-1.5">
+    <div className="flex h-11 shrink-0 items-center gap-1 rounded-lg border border-accent bg-bg-1 px-2">
       <input
         autoFocus
         value={addName}
@@ -585,7 +584,7 @@ export function ProcessStagesBoard({
       {stagesLoading ? (
         <div className="mt-4 flex gap-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-10 w-36 shrink-0 animate-pulse rounded-lg bg-bg-2" />
+            <div key={i} className="h-11 w-40 shrink-0 animate-pulse rounded-lg bg-bg-2" />
           ))}
         </div>
       ) : stagesError ? (
@@ -597,7 +596,7 @@ export function ProcessStagesBoard({
         </div>
       ) : !hasBoard ? (
         // Совсем пусто: ни этапов, ни нераспределённых задач.
-        <div className="mt-4 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-2/20 px-6 py-10 text-center">
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-strong bg-bg-2 px-6 py-10 text-center">
           <p className="text-sm font-medium text-fg-secondary">У процесса ещё нет этапов</p>
           <p className="max-w-md text-xs text-fg-muted">
             Разбейте процесс на последовательные этапы (например «Заявка», «Согласование»,
@@ -621,22 +620,24 @@ export function ProcessStagesBoard({
       ) : (
         <>
           {/* Пайплайн этапов */}
-          <div className="no-scrollbar mt-4 flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="no-scrollbar mt-4 flex items-center gap-1.5 overflow-x-auto py-1">
             {unassignedTasks.length > 0 ? (
               <>
                 <button
                   type="button"
                   onClick={() => setSelectedStageId(UNASSIGNED)}
                   className={cx(
-                    'flex shrink-0 items-center gap-2 rounded-lg border border-dashed border-border-strong bg-bg-1 px-3 py-2 text-sm transition-colors hover:border-fg-muted',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                    viewingUnassigned ? 'ring-2 ring-accent' : '',
+                    'flex h-11 shrink-0 items-center gap-2.5 rounded-lg border px-3 text-sm transition-colors duration-150',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent',
+                    viewingUnassigned
+                      ? 'border-accent bg-accent-muted shadow-sm'
+                      : 'border-dashed border-border-strong bg-bg-1 hover:border-fg-muted hover:bg-bg-2',
                   )}
                 >
-                  <span className="text-fg-secondary">Без этапа</span>
-                  <span className={countBadgeClass(false)}>{unassignedTasks.length}</span>
+                  <span className="whitespace-nowrap text-fg-secondary">Без этапа</span>
+                  <span className={countBadgeClass(viewingUnassigned)}>{unassignedTasks.length}</span>
                 </button>
-                <span className="mx-1 h-6 w-px shrink-0 bg-border-subtle" aria-hidden />
+                <span className="mx-1 h-6 w-px shrink-0 self-center bg-border-subtle" aria-hidden />
               </>
             ) : null}
 
@@ -646,19 +647,21 @@ export function ProcessStagesBoard({
               const count = tasksByStage.get(s.id)?.length ?? 0;
               return (
                 <Fragment key={s.id}>
-                  {i > 0 ? <ChevronRightIcon className="shrink-0 text-fg-muted" /> : null}
+                  {i > 0 ? (
+                    <ChevronRightIcon className="shrink-0 self-center text-fg-muted" />
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => setSelectedStageId(s.id)}
-                    className={pillClass(isSelected, isCurrent)}
+                    className={pillClass(isSelected)}
                   >
                     <span className={stepCircleClass(isCurrent)}>
-                      {isCurrent ? <FlagIcon size={13} /> : i + 1}
+                      {isCurrent ? <FlagIcon size={12} /> : i + 1}
                     </span>
                     <span className="min-w-0 flex-1 truncate font-medium text-fg-primary">
                       {s.name}
                     </span>
-                    <span className={countBadgeClass(isCurrent)}>{count}</span>
+                    <span className={countBadgeClass(isSelected || isCurrent)}>{count}</span>
                   </button>
                 </Fragment>
               );
@@ -674,7 +677,7 @@ export function ProcessStagesBoard({
                   setActionError(null);
                   setAdding(true);
                 }}
-                className="flex shrink-0 items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 py-2 text-sm text-fg-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="flex h-11 shrink-0 items-center gap-1.5 rounded-lg border border-dashed border-border-strong px-3 text-sm text-fg-muted transition-colors duration-150 hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
               >
                 <PlusIcon size={15} />
                 Этап
@@ -684,7 +687,7 @@ export function ProcessStagesBoard({
 
           {/* Панель выбранного этапа / сегмента «Без этапа» */}
           {selectedStage ? (
-            <div className="mt-4 rounded-lg border border-border-subtle bg-bg-2/30 p-4">
+            <div className="mt-4 rounded-lg border border-border-subtle bg-bg-2 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   {renamingId === selectedStage.id ? (
@@ -702,7 +705,7 @@ export function ProcessStagesBoard({
                         }
                       }}
                       onBlur={() => void submitRename(selectedStage)}
-                      className="min-w-0 rounded-md border border-accent bg-bg-1 px-2 py-1 text-base font-semibold text-fg-primary focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
+                      className="w-56 max-w-full min-w-0 rounded-md border border-accent bg-bg-1 px-2 py-1 text-base font-semibold text-fg-primary focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50"
                     />
                   ) : (
                     <h3 className="truncate text-base font-semibold text-fg-primary">
@@ -717,7 +720,7 @@ export function ProcessStagesBoard({
                   ) : null}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-1">
                   <IconButton
                     label="Переместить левее"
                     onClick={() => void swapStages(selectedIndex, selectedIndex - 1)}
@@ -743,6 +746,7 @@ export function ProcessStagesBoard({
                       Переместить сюда
                     </Button>
                   ) : null}
+                  <span className="mx-0.5 h-5 w-px shrink-0 bg-border-subtle" aria-hidden />
                   <IconButton
                     label="Переименовать этап"
                     onClick={() => {
@@ -793,7 +797,7 @@ export function ProcessStagesBoard({
               )}
             </div>
           ) : viewingUnassigned ? (
-            <div className="mt-4 rounded-lg border border-border-subtle bg-bg-2/30 p-4">
+            <div className="mt-4 rounded-lg border border-border-subtle bg-bg-2 p-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base font-semibold text-fg-primary">Без этапа</h3>
                 <span className="text-xs text-fg-muted">{unassignedTasks.length}</span>
