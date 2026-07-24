@@ -30,6 +30,8 @@ function ViewSwitch({ view, onView }: { view: CalendarView; onView: (v: Calendar
             className={cx(
               'rounded px-2.5 py-1 text-xs font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
               active ? 'bg-accent-muted text-accent' : 'text-fg-muted hover:text-fg-secondary',
+              // «Неделя» на узком экране нечитаема (7 колонок timeGrid) — прячем на мобильном.
+              o.value === 'timeGridWeek' && 'max-sm:hidden',
             )}
           >
             {o.label}
@@ -146,7 +148,7 @@ export function CalendarToolbar({
           {isLoading ? <span className="text-xs text-fg-muted">· обновление…</span> : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <ViewSwitch view={view} onView={onView} />
           <Button size="sm" leftIcon={<PlusIcon />} onClick={onCreate}>
             Создать
@@ -164,7 +166,7 @@ export function CalendarToolbar({
             className={cx(
               'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
               allActive
-                ? 'border-accent/40 bg-accent-muted text-accent'
+                ? 'border-accent bg-accent-muted text-accent'
                 : 'border-border-subtle text-fg-muted hover:text-fg-secondary',
             )}
           >
@@ -181,7 +183,7 @@ export function CalendarToolbar({
                 className={cx(
                   'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                   active
-                    ? 'border-accent/40 bg-accent-muted text-accent'
+                    ? 'border-accent bg-accent-muted text-accent'
                     : 'border-border-subtle text-fg-muted hover:text-fg-secondary',
                 )}
               >
@@ -198,7 +200,7 @@ export function CalendarToolbar({
           className={cx(
             'inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
             filtersOpen || activeCount > 0
-              ? 'border-accent/40 bg-accent-muted text-accent'
+              ? 'border-accent bg-accent-muted text-accent'
               : 'border-border-subtle text-fg-secondary hover:bg-bg-2 hover:text-fg-primary',
           )}
         >

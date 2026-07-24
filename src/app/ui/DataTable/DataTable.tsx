@@ -47,7 +47,16 @@ export function DataTable<T>({
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
-  const [view, setView] = useState<DataTableView>(initialView);
+  // На узких экранах список по умолчанию открываем карточками: широкая таблица с горизонтальным
+  // скроллом на телефоне выглядит неопрятно. Явно заданный вид и отключённый тумблер не трогаем.
+  const [view, setView] = useState<DataTableView>(() =>
+    allowViewToggle &&
+    initialView === 'table' &&
+    typeof window !== 'undefined' &&
+    window.innerWidth < 640
+      ? 'cards'
+      : initialView,
+  );
   const [page, setPage] = useState(1);
 
   const filterColumns = useMemo(() => columns.filter((c) => c.filter && c.value), [columns]);
@@ -272,7 +281,7 @@ export function DataTable<T>({
       <div className="overflow-x-auto rounded-lg border border-border-subtle bg-bg-1 shadow-sm">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-border-subtle bg-bg-2/60">
+            <tr className="border-b border-border-subtle bg-bg-2">
               {columns.map((col) => {
                 const sortActive = sort?.key === col.key;
                 const sortable = !!col.sortable && !!col.value;

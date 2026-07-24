@@ -109,7 +109,7 @@ export function ClientProjectsField({
       {loading ? (
         <div className="flex flex-col gap-2">
           {[0, 1].map((i) => (
-            <div key={i} className="h-11 animate-pulse rounded-md border border-border-subtle bg-bg-2/40" />
+            <div key={i} className="h-11 animate-pulse rounded-md border border-border-subtle bg-bg-2" />
           ))}
         </div>
       ) : display.length > 0 ? (

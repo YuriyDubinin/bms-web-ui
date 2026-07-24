@@ -400,7 +400,7 @@ export function ProcessFormDialog({
         {isEdit && process ? (
           <>
             <SectionLabel>Служебное</SectionLabel>
-            <dl className="grid grid-cols-1 gap-3 rounded-md bg-bg-2/40 p-3 text-xs sm:grid-cols-3">
+            <dl className="grid grid-cols-1 gap-3 rounded-md bg-bg-2 p-3 text-xs sm:grid-cols-3">
               <div className="min-w-0">
                 <dt className="text-fg-muted">Создан</dt>
                 <dd className="mt-0.5 text-fg-secondary">{formatDateTime(process.created_at)}</dd>

@@ -181,6 +181,12 @@ export function CalendarPage() {
     });
   };
 
+  // Тач-дружелюбное создание: простой тап по дню/слоту открывает меню создания с этой датой.
+  // На тач-экранах `select` требует долгого нажатия, поэтому одиночный тап ловим отдельно.
+  const onDateClick = (arg: FCArg<'dateClick'>) => {
+    setChooser({ open: true, date: arg.date, endDate: null, allDay: arg.allDay });
+  };
+
   const onEventClick = (arg: FCArg<'eventClick'>) => {
     const meta = arg.event.extendedProps as EventMeta;
     if (meta.type === 'task') setTaskForm({ open: true, task: meta.raw });
@@ -328,9 +334,12 @@ export function CalendarPage() {
             slotMinTime="06:00:00"
             slotMaxTime="23:00:00"
             expandRows
+            /* На тач-экранах ускоряем удержание для перетаскивания/выделения (по умолчанию 1с). */
+            longPressDelay={300}
             eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
             datesSet={onDatesSet}
             select={onSelect}
+            dateClick={onDateClick}
             eventClick={onEventClick}
             eventDrop={onEventDrop}
             eventResize={onEventResize}

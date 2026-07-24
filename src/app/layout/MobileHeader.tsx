@@ -12,7 +12,7 @@ export type MobileHeaderProps = {
 /** Мобильный хедер (виден только < md): кнопка меню, бренд, переключатель тем. */
 export function MobileHeader({ onOpenMenu, theme, onThemeChange }: MobileHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border-subtle bg-bg-1/95 px-4 backdrop-blur md:hidden">
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border-subtle bg-bg-1 px-4 md:hidden">
       <div className="flex items-center gap-2">
         <button
           type="button"

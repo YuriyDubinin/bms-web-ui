@@ -135,3 +135,40 @@
 .bms-calendar .fc-day-sun {
   background: color-mix(in srgb, var(--bg-2) 45%, transparent);
 }
+
+/*
+ * Мобильная плотность (≤640px): на узком экране сетка месяца/недели тесная — ужимаем
+ * отступы, размеры дней и чипов, ось времени, чтобы события помещались и не «вылазили».
+ */
+@media (max-width: 640px) {
+  .bms-calendar {
+    font-size: 0.8125rem;
+  }
+  .bms-calendar .fc-col-header-cell-cushion {
+    padding: 6px 2px;
+    font-size: 0.62rem;
+    letter-spacing: 0;
+  }
+  .bms-calendar .fc-daygrid-day-number {
+    padding: 3px 5px;
+    font-size: 0.72rem;
+  }
+  .bms-calendar .fc-daygrid-event {
+    margin-top: 1px;
+  }
+  .bms-calendar .fc-event {
+    font-size: 0.68rem;
+    border-radius: 5px;
+  }
+  .bms-calendar .fc-daygrid-more-link {
+    font-size: 0.66rem;
+    padding: 0 2px;
+  }
+  .bms-calendar .fc-timegrid-slot {
+    height: 2.15rem;
+  }
+  .bms-calendar .fc-timegrid-axis-cushion,
+  .bms-calendar .fc-timegrid-slot-label-cushion {
+    font-size: 0.62rem;
+  }
+}

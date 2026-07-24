@@ -18,12 +18,12 @@ export function StatTile({
   hint?: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm">
+    <div className="min-w-0 rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm">
       <span className="flex items-center gap-2 text-fg-muted">
         {icon ? <NavGlyph name={icon} size={16} /> : null}
-        <span className="text-xs">{label}</span>
+        <span className="min-w-0 truncate text-xs">{label}</span>
       </span>
-      <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-fg-primary">{value}</p>
+      <p className="mt-2 break-words font-mono text-2xl font-semibold tabular-nums text-fg-primary">{value}</p>
       {hint ? <p className="mt-1 truncate text-xs text-fg-muted">{hint}</p> : null}
     </div>
   );
@@ -191,9 +191,9 @@ export function FinancePanel({ finance }: { finance: FinanceStat }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {items.map((it) => (
-        <div key={it.label} className="rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm">
-          <p className="text-xs text-fg-muted">{it.label}</p>
-          <p className={cx('mt-1.5 font-mono text-lg font-semibold tabular-nums', it.tone ?? 'text-fg-primary')}>
+        <div key={it.label} className="min-w-0 rounded-lg border border-border-subtle bg-bg-1 p-4 shadow-sm">
+          <p className="truncate text-xs text-fg-muted">{it.label}</p>
+          <p className={cx('mt-1.5 break-words font-mono text-lg font-semibold tabular-nums', it.tone ?? 'text-fg-primary')}>
             {it.value}
           </p>
           {it.hint ? <p className="mt-0.5 truncate text-[11px] text-fg-muted">{it.hint}</p> : null}

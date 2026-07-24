@@ -49,7 +49,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/50 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/50 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
@@ -57,11 +57,15 @@ export function Modal({ open, onClose, title, description, children, footer, siz
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
         className={cx(
-          'my-auto w-full rounded-lg border border-border-subtle bg-bg-1 shadow-md',
+          // Каркас колонкой с ограничением высоты: шапка и футер закреплены, тело прокручивается —
+          // на мобильном форма с клавиатурой не «съедает» кнопки. Мобайл — нижний лист во всю ширину
+          // со скруглением сверху; на sm+ — центрированная карточка.
+          'flex max-h-[92dvh] w-full flex-col rounded-t-2xl border border-border-subtle bg-bg-1 shadow-md',
+          'sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg',
           SIZES[size],
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-border-subtle px-5 py-4">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border-subtle px-5 py-4">
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-fg-primary">{title}</h2>
             {description ? <p className="mt-0.5 text-sm text-fg-secondary">{description}</p> : null}
@@ -76,10 +80,10 @@ export function Modal({ open, onClose, title, description, children, footer, siz
           </button>
         </div>
 
-        <div className="px-5 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
 
         {footer ? (
-          <div className="flex items-center justify-end gap-2 border-t border-border-subtle px-5 py-4">
+          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border-subtle px-5 py-4">
             {footer}
           </div>
         ) : null}
