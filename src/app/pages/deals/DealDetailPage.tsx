@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, deleteDeal } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, ConfirmDialog } from '@app/ui';
+import { AttributesView, Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useDeals } from './useDeals';
 import { DealFormDialog } from './DealFormDialog';
@@ -186,7 +186,6 @@ export function DealDetailPage() {
     );
   }
 
-  const hasAttributes = Object.keys(deal.attributes).length > 0;
   const ownerProject = resolvers.projectName(deal.project_id);
   const assignee = resolvers.userName(deal.assigned_to);
   const linkedClient = dealClients[0];
@@ -309,17 +308,9 @@ export function DealDetailPage() {
 
             <Card>
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
-              {hasAttributes ? (
-                <dl className="mt-3">
-                  {Object.entries(deal.attributes).map(([key, value]) => (
-                    <MetaRow key={key} label={key}>
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </MetaRow>
-                  ))}
-                </dl>
-              ) : (
-                <p className="mt-3 text-sm text-fg-muted">Дополнительные атрибуты не заданы.</p>
-              )}
+              <div className="mt-3">
+                <AttributesView attributes={deal.attributes} />
+              </div>
             </Card>
           </div>
         ) : tab === 'services' ? (

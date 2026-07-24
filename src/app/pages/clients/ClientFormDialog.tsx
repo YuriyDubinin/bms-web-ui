@@ -10,7 +10,7 @@ import {
   type Project,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import {
   ADDRESS_COMMENT_KEY,
   ADDRESS_FIELDS,
@@ -569,24 +569,16 @@ export function ClientFormDialog({
 
         {/* Доп. атрибуты */}
         <SectionLabel>Дополнительно</SectionLabel>
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="client-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"vip": true}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="client-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="client-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => {
-              setField('attributes', e.target.value);
+            hasError={!!errors.attributes}
+            onChange={(v) => {
+              setField('attributes', v);
               clearError('attributes');
             }}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
           />
         </Field>
       </form>

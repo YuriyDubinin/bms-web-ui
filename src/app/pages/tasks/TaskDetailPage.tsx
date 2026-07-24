@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, deleteTask } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, ConfirmDialog } from '@app/ui';
+import { AttributesView, Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useTasks } from './useTasks';
 import { useUsers } from './useUsers';
@@ -184,7 +184,6 @@ export function TaskDetailPage() {
     );
   }
 
-  const hasAttributes = Object.keys(task.attributes).length > 0;
   const ownerProject = resolvers.projectName(task.project_id);
   const assignee = resolvers.userName(task.assigned_to);
   const overdue = isOverdue(task.due_at, task.status);
@@ -321,17 +320,9 @@ export function TaskDetailPage() {
 
             <Card>
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
-              {hasAttributes ? (
-                <dl className="mt-3">
-                  {Object.entries(task.attributes).map(([key, value]) => (
-                    <MetaRow key={key} label={key}>
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </MetaRow>
-                  ))}
-                </dl>
-              ) : (
-                <p className="mt-3 text-sm text-fg-muted">Дополнительные атрибуты не заданы.</p>
-              )}
+              <div className="mt-3">
+                <AttributesView attributes={task.attributes} />
+              </div>
             </Card>
           </div>
         ) : tab === 'services' ? (

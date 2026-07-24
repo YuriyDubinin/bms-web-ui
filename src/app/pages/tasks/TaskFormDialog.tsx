@@ -17,7 +17,7 @@ import {
   type User,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import { clientName } from '../clients/model';
 import {
   TASK_PRIORITIES,
@@ -627,21 +627,13 @@ export function TaskFormDialog({
         </div>
 
         <SectionLabel>Дополнительно</SectionLabel>
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="task-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"checklist": ["смета", "сроки"]}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="task-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="task-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => setField('attributes', e.target.value)}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
+            hasError={!!errors.attributes}
+            onChange={(v) => setField('attributes', v)}
           />
         </Field>
 

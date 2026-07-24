@@ -20,3 +20,9 @@ export type { ConfirmDialogProps } from './ConfirmDialog';
 
 export { SelectSearch } from './SelectSearch';
 export type { SelectSearchProps, SelectOption } from './SelectSearch';
+
+export { AttributesEditor } from './AttributesEditor';
+export type { AttributesEditorProps } from './AttributesEditor';
+
+export { AttributesView } from './AttributesView';
+export type { AttributesViewProps } from './AttributesView';

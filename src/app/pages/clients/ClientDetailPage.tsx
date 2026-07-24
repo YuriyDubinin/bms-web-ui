@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, deleteClient } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, ConfirmDialog } from '@app/ui';
+import { AttributesView, Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useClients } from './useClients';
 import { ClientFormDialog } from './ClientFormDialog';
@@ -196,7 +196,6 @@ export function ClientDetailPage() {
     );
   }
 
-  const hasAttributes = Object.keys(client.attributes).length > 0;
   const address = formatAddress(client.address);
   const subtitle =
     [clientSubtitle(client), client.email, client.phone].filter(Boolean).join(' · ') || 'Без контактов';
@@ -322,17 +321,9 @@ export function ClientDetailPage() {
 
               <Card>
                 <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
-                {hasAttributes ? (
-                  <dl className="mt-3">
-                    {Object.entries(client.attributes).map(([key, value]) => (
-                      <MetaRow key={key} label={key}>
-                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                      </MetaRow>
-                    ))}
-                  </dl>
-                ) : (
-                  <p className="mt-3 text-sm text-fg-muted">Дополнительные атрибуты не заданы.</p>
-                )}
+                <div className="mt-3">
+                  <AttributesView attributes={client.attributes} />
+                </div>
               </Card>
             </div>
           </div>

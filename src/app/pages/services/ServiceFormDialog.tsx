@@ -9,7 +9,7 @@ import {
   type ServiceStatus,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import {
   CURRENCIES,
   DEFAULT_CURRENCY,
@@ -444,21 +444,13 @@ export function ServiceFormDialog({
           />
         </Field>
 
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="service-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"warranty_days": 30}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="service-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="service-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => setField('attributes', e.target.value)}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
+            hasError={!!errors.attributes}
+            onChange={(v) => setField('attributes', v)}
           />
         </Field>
       </form>

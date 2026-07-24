@@ -14,7 +14,7 @@ import {
   type User,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import { clientName } from '../clients/model';
 import {
   CURRENCIES,
@@ -600,21 +600,13 @@ export function DealFormDialog({
         </Field>
 
         <SectionLabel>Дополнительно</SectionLabel>
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="deal-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"source": "tender"}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="deal-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="deal-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => setField('attributes', e.target.value)}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
+            hasError={!!errors.attributes}
+            onChange={(v) => setField('attributes', v)}
           />
         </Field>
 

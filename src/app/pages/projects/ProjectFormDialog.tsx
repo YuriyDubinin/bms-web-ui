@@ -8,7 +8,7 @@ import {
   type ProjectStatus,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS } from './model';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
@@ -377,21 +377,13 @@ export function ProjectFormDialog({
           </Field>
         </div>
 
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="project-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"fleet_size": 12}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="project-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="project-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => setField('attributes', e.target.value)}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
+            hasError={!!errors.attributes}
+            onChange={(v) => setField('attributes', v)}
           />
         </Field>
       </form>

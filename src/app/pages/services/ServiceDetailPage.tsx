@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, deleteService } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, ConfirmDialog } from '@app/ui';
+import { AttributesView, Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useServices } from './useServices';
 import { ServiceFormDialog } from './ServiceFormDialog';
@@ -188,7 +188,6 @@ export function ServiceDetailPage() {
     );
   }
 
-  const hasAttributes = Object.keys(service.attributes).length > 0;
   const ownerProject = projectName(service.project_id);
 
   // Значения KPI-счётчиков по ключу раздела. Счётчик всегда показывает число: 0 (пока
@@ -296,17 +295,9 @@ export function ServiceDetailPage() {
 
             <Card>
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
-              {hasAttributes ? (
-                <dl className="mt-3">
-                  {Object.entries(service.attributes).map(([key, value]) => (
-                    <MetaRow key={key} label={key}>
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </MetaRow>
-                  ))}
-                </dl>
-              ) : (
-                <p className="mt-3 text-sm text-fg-muted">Дополнительные атрибуты не заданы.</p>
-              )}
+              <div className="mt-3">
+                <AttributesView attributes={service.attributes} />
+              </div>
             </Card>
           </div>
         ) : tab === 'clients' ? (

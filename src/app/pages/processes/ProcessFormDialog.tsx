@@ -9,7 +9,7 @@ import {
   type Project,
 } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, Modal, SelectSearch } from '@app/ui';
+import { AttributesEditor, Button, Modal, SelectSearch } from '@app/ui';
 import { PROCESS_STATUSES, PROCESS_STATUS_LABELS, formatDateTime } from './model';
 
 const cx = (...classes: (string | false | undefined)[]): string =>
@@ -379,21 +379,13 @@ export function ProcessFormDialog({
         </div>
 
         <SectionLabel>Дополнительно</SectionLabel>
-        <Field
-          label="Доп. атрибуты (JSON)"
-          htmlFor="process-attributes"
-          error={errors.attributes}
-          hint='Произвольный JSON-объект, например {"owner": "Иванов"}'
-        >
-          <textarea
+        <Field label="Доп. атрибуты" htmlFor="process-attributes" error={errors.attributes}>
+          <AttributesEditor
             id="process-attributes"
-            rows={3}
             value={form.attributes}
             disabled={submitting}
-            placeholder="{}"
-            spellCheck={false}
-            onChange={(e) => setField('attributes', e.target.value)}
-            className={cx(inputClass(!!errors.attributes), 'resize-y font-mono text-xs')}
+            hasError={!!errors.attributes}
+            onChange={(v) => setField('attributes', v)}
           />
         </Field>
 

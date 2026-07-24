@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, deleteProcess } from '@app/api';
 import { useAuth } from '@app/auth';
-import { Button, ConfirmDialog } from '@app/ui';
+import { AttributesView, Button, ConfirmDialog } from '@app/ui';
 import { NavGlyph, type NavIconName } from '@app/layout/icons';
 import { useProcesses } from './useProcesses';
 import { ProcessFormDialog } from './ProcessFormDialog';
@@ -189,12 +189,6 @@ export function ProcessDetailPage() {
     );
   }
 
-  // Служебный ключ текущего этапа не показываем как пользовательский атрибут — им управляет
-  // конструктор этапов.
-  const visibleAttributes = Object.entries(process.attributes).filter(
-    ([key]) => key !== CURRENT_STAGE_ATTR,
-  );
-  const hasAttributes = visibleAttributes.length > 0;
   const ownerProject = projectName(process.project_id);
   const period = formatPeriod(process.starts_at, process.ends_at);
   const subtitle = [ownerProject, period !== '—' ? period : ''].filter(Boolean).join(' · ') || 'Процесс';
@@ -310,17 +304,9 @@ export function ProcessDetailPage() {
 
             <Card>
               <h2 className="text-base font-semibold text-fg-primary">Доп. атрибуты</h2>
-              {hasAttributes ? (
-                <dl className="mt-3">
-                  {visibleAttributes.map(([key, value]) => (
-                    <MetaRow key={key} label={key}>
-                      {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                    </MetaRow>
-                  ))}
-                </dl>
-              ) : (
-                <p className="mt-3 text-sm text-fg-muted">Дополнительные атрибуты не заданы.</p>
-              )}
+              <div className="mt-3">
+                <AttributesView attributes={process.attributes} hideKeys={[CURRENT_STAGE_ATTR]} />
+              </div>
             </Card>
           </div>
         ) : tab === 'services' ? (
